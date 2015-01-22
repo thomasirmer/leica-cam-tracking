@@ -1,0 +1,92 @@
+import ij.IJ;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JTextField;
+
+/**
+ * 
+ */
+
+/**
+ * @author Thomas Irmer
+ *
+ */
+public class PluginWindow extends JFrame {
+
+	private static final long serialVersionUID = 5811095093777366932L;
+
+	private static PluginWindow instance = null;
+	private CAMConnection camConnection;
+	private JTextField textFieldHostAddress;
+	private JTextField textFieldPortNumber;
+	
+	// Replaces the constructor to provide a singleton interface.
+	// This method returns either the existing instance or creates it.
+	public static PluginWindow getInstance() {
+		if (instance == null)
+			return new PluginWindow();
+		else
+			return instance;
+	}
+	
+	// Constructor is set to private because this class is a singleton.
+	// To get the instance of this class call getInstance().
+	private PluginWindow() {
+		getContentPane().setLayout(null);
+		
+		JLabel lblLeicaCamConnector = new JLabel("Leica CAM Connector");
+		lblLeicaCamConnector.setBounds(10, 11, 102, 14);
+		getContentPane().add(lblLeicaCamConnector);
+		
+		JButton btnConnect = new JButton("Connect");
+		btnConnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO: Establish connection
+				camConnection = new CAMConnection(getHostName(), getPort());
+				camConnection.connect();
+			}		
+		});
+		btnConnect.setBounds(10, 89, 89, 23);
+		getContentPane().add(btnConnect);
+		
+		textFieldHostAddress = new JTextField();
+		textFieldHostAddress.setBounds(83, 36, 86, 20);
+		getContentPane().add(textFieldHostAddress);
+		textFieldHostAddress.setColumns(10);
+		
+		JLabel lblHostAddress = new JLabel("Host address");
+		lblHostAddress.setBounds(10, 39, 63, 14);
+		getContentPane().add(lblHostAddress);
+		
+		JLabel lblPortNo = new JLabel("Port no.");
+		lblPortNo.setBounds(10, 64, 46, 14);
+		getContentPane().add(lblPortNo);
+		
+		textFieldPortNumber = new JTextField();
+		textFieldPortNumber.setBounds(83, 61, 86, 20);
+		getContentPane().add(textFieldPortNumber);
+		textFieldPortNumber.setColumns(10);
+	}
+	
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// getter functions for gui elements
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	
+	private String getHostName() {
+		String hostAddress = textFieldHostAddress.getText();
+		// TODO: Validate hostAddress
+		return hostAddress;
+	}
+
+	private int getPort() {
+		String portTxt = textFieldPortNumber.getText();
+		int port = Integer.parseInt(portTxt);
+		// TODO: Validate portNumber
+		return port;
+	}
+}
