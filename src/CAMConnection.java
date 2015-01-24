@@ -22,26 +22,22 @@ public class CAMConnection {
 	private int port;
 
 	private Socket client = null;
+	private DataOutputStream camOutput;
+	private DataInputStream camInput;
 
 	public CAMConnection(InetAddress host, int port) {
 		this.host = host;
 		this.port = port;
 	}
 
-	public void connect() {
+	public void connect() throws IOException {
 		// Establish connection to given host and create streams
-		try {
-			client = new Socket(host, port);
-			
-			OutputStream outputStream = client.getOutputStream();
-			DataOutputStream camOutput = new DataOutputStream(outputStream);
-			InputStream inputStream = client.getInputStream();
-			DataInputStream camInput = new DataInputStream(inputStream);
-			
-			IJ.showMessage("Connection to host " + host.getHostAddress() + ":" + port + " established."); // DEBUG
-		} catch (IOException e) {
-			IJ.showMessage("Error", "Failed to connect to " + host.getHostAddress() + ":" + port + "\n" + e.getMessage());
-		}
+		client = new Socket(host, port);
+
+		OutputStream outputStream = client.getOutputStream();
+		camOutput = new DataOutputStream(outputStream);
+		InputStream inputStream = client.getInputStream();
+		camInput = new DataInputStream(inputStream);
 	}
 
 	public void disconnect() {
@@ -51,6 +47,7 @@ public class CAMConnection {
 		}
 
 		try {
+			camOutput.writeUTF("[CLIENT] Goodbye!");
 			client.close();
 		} catch (IOException e) {
 			IJ.showMessage("Error", "Failed to close socket" + "\n" + e.getMessage());

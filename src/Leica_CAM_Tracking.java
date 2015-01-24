@@ -5,7 +5,7 @@ import ij.plugin.PlugIn;
  */
 
 /**
- * @author thoirm
+ * @author Thomas Irmer
  *
  */
 public class Leica_CAM_Tracking implements PlugIn {
@@ -14,7 +14,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	public void run(String arg0) {
 		// Create GUI and show
 		PluginWindow gui = PluginWindow.getInstance();
-		gui.setLocationByPlatform(true);
+		gui.setSize(250, 170);
 		gui.setVisible(true);
 	}
 

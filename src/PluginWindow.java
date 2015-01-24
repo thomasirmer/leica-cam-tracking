@@ -2,6 +2,7 @@ import ij.IJ;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -42,7 +43,7 @@ public class PluginWindow extends JFrame {
 		getContentPane().setLayout(null);
 
 		JLabel lblLeicaCamConnector = new JLabel("Leica CAM Connector");
-		lblLeicaCamConnector.setBounds(10, 11, 102, 14);
+		lblLeicaCamConnector.setBounds(10, 11, 210, 14);
 		getContentPane().add(lblLeicaCamConnector);
 
 		// Button >>Connect<<
@@ -52,18 +53,18 @@ public class PluginWindow extends JFrame {
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					InetAddress hostAddress = getHostName();
-					int port = getPort();
-					camConnection = new CAMConnection(hostAddress, port);
+					camConnection = new CAMConnection(getHostName(), getPort());
 					camConnection.connect();
 				} catch (UnknownHostException e1) {
-					IJ.showMessage("Error", "Invalid host address format: " + e1.getMessage());
+					IJ.showMessage("Error", "Invalid host address format:\n" + e1.getMessage());
 				} catch (NumberFormatException e2) {
-					IJ.showMessage("Error", "Invalid port number format: " + e2.getMessage());
+					IJ.showMessage("Error", "Invalid port number format:\n" + e2.getMessage());
+				} catch (IOException e3) {
+					IJ.showMessage("Error", "Connection failed:\n" + e3.getMessage());
 				}
 			}
 		});
-		btnConnect.setBounds(10, 89, 89, 23);
+		btnConnect.setBounds(6, 110, 89, 29);
 		getContentPane().add(btnConnect);
 
 		// Button >>Disconnect<<
@@ -74,24 +75,24 @@ public class PluginWindow extends JFrame {
 				camConnection.disconnect();
 			}
 		});
-		btnDisconnect.setBounds(109, 89, 89, 23);
+		btnDisconnect.setBounds(118, 110, 102, 29);
 		getContentPane().add(btnDisconnect);
 
 		JLabel lblHostAddress = new JLabel("Host address");
-		lblHostAddress.setBounds(10, 39, 63, 14);
+		lblHostAddress.setBounds(10, 37, 83, 14);
 		getContentPane().add(lblHostAddress);
 		
 		textFieldHostAddress = new JTextField();
-		textFieldHostAddress.setBounds(83, 36, 115, 20);
+		textFieldHostAddress.setBounds(105, 30, 115, 28);
 		getContentPane().add(textFieldHostAddress);
 		textFieldHostAddress.setColumns(10);
 
-		JLabel lblPortNo = new JLabel("Port no.");
-		lblPortNo.setBounds(10, 64, 46, 14);
+		JLabel lblPortNo = new JLabel("Port");
+		lblPortNo.setBounds(10, 77, 83, 14);
 		getContentPane().add(lblPortNo);
 
 		textFieldPortNumber = new JTextField();
-		textFieldPortNumber.setBounds(83, 61, 115, 20);
+		textFieldPortNumber.setBounds(105, 70, 115, 28);
 		getContentPane().add(textFieldPortNumber);
 		textFieldPortNumber.setColumns(10);
 	}
@@ -102,25 +103,13 @@ public class PluginWindow extends JFrame {
 
 	private InetAddress getHostName() throws UnknownHostException {
 		InetAddress hostAddress = null;
-		String hostText = textFieldHostAddress.getText();
-
-		if (hostText.isEmpty()) {
-			throw new UnknownHostException("[empty]");
-		}
-
-		hostAddress = InetAddress.getByName(hostText);
+		hostAddress = InetAddress.getByName(textFieldHostAddress.getText());
 		return hostAddress;
 	}
 
 	private int getPort() throws NumberFormatException {
 		int port = 0;
-		String portTxt = textFieldPortNumber.getText();
-
-		if (portTxt.isEmpty()) {
-			throw new NumberFormatException("[empty]");
-		}
-
-		port = Integer.valueOf(portTxt);
+		port = Integer.valueOf(textFieldPortNumber.getText());
 		return port;
 	}
 }
