@@ -1,15 +1,27 @@
 import ij.IJ;
 
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.EtchedBorder;
+
+import org.eclipse.wb.swing.FocusTraversalOnArray;
+
+import com.sun.net.ssl.internal.www.protocol.https.Handler;
+
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 
 /**
  * 
@@ -24,9 +36,13 @@ public class PluginWindow extends JFrame {
 	private static final long serialVersionUID = 5811095093777366932L;
 
 	private static PluginWindow instance = null;
-	private CAMConnection camConnection;
 	private JTextField textFieldHostAddress;
-	private JTextField textFieldPortNumber;
+	private JTextField textFieldPort;
+	private JTextArea textAreaLogger;
+
+	private CAMConnection camConnection;
+
+	private final static Logger logger = Logger.getGlobal();
 
 	// Replaces the constructor to provide a singleton interface.
 	// This method returns either the existing instance or creates it.
@@ -42,63 +58,86 @@ public class PluginWindow extends JFrame {
 	private PluginWindow() {
 		getContentPane().setLayout(null);
 
-		JLabel lblLeicaCamConnector = new JLabel("Leica CAM Connector");
-		lblLeicaCamConnector.setBounds(10, 11, 210, 14);
-		getContentPane().add(lblLeicaCamConnector);
+		JLabel lblLeicaCamInterface = new JLabel("Leica CAM Interface");
+		lblLeicaCamInterface.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		lblLeicaCamInterface.setBounds(10, 11, 210, 14);
+		getContentPane().add(lblLeicaCamInterface);
+
+		JPanel panelConnection = new JPanel();
+		panelConnection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelConnection.setBounds(10, 36, 230, 128);
+		getContentPane().add(panelConnection);
+		panelConnection.setLayout(null);
+
+		JLabel lblHostAddress = new JLabel("Host address");
+		lblHostAddress.setBounds(10, 18, 83, 14);
+		panelConnection.add(lblHostAddress);
+
+		textFieldHostAddress = new JTextField();
+		textFieldHostAddress.setBounds(103, 11, 115, 28);
+		panelConnection.add(textFieldHostAddress);
+		textFieldHostAddress.setColumns(10);
+
+		JLabel lblPort = new JLabel("Port");
+		lblPort.setBounds(10, 57, 83, 14);
+		panelConnection.add(lblPort);
+
+		textFieldPort = new JTextField();
+		textFieldPort.setBounds(103, 50, 115, 28);
+		panelConnection.add(textFieldPort);
+		textFieldPort.setText("8895");
+		textFieldPort.setEditable(false);
+		textFieldPort.setColumns(10);
+		
+		JScrollPane scrollPaneLogger = new JScrollPane();
+		scrollPaneLogger.setBounds(10, 331, 764, 220);
+		getContentPane().add(scrollPaneLogger);
+
+		textAreaLogger = new JTextArea();
+		scrollPaneLogger.setViewportView(textAreaLogger);
 
 		// Button >>Connect<<
 		// Establish connection to given host at given port.
 		// Abort if any error occurs
 		JButton btnConnect = new JButton("Connect");
+		btnConnect.setBounds(10, 89, 89, 29);
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					camConnection = new CAMConnection(getHostName(), getPort());
 					camConnection.connect();
 				} catch (UnknownHostException e1) {
-					IJ.showMessage("Error", "Invalid host address format:\n" + e1.getMessage());
+					logger.warning("Invalid host address format: " + e1.getMessage());
 				} catch (NumberFormatException e2) {
-					IJ.showMessage("Error", "Invalid port number format:\n" + e2.getMessage());
+					logger.warning("Invalid port number format: " + e2.getMessage());
 				} catch (IOException e3) {
-					IJ.showMessage("Error", "Connection failed:\n" + e3.getMessage());
+					logger.warning("Connection failed: " + e3.getMessage());
 				}
 			}
 		});
-		btnConnect.setBounds(6, 110, 89, 29);
-		getContentPane().add(btnConnect);
+		panelConnection.add(btnConnect);
 
 		// Button >>Disconnect<<
 		// Disconnect from host.
 		JButton btnDisconnect = new JButton("Disconnect");
+		btnDisconnect.setBounds(116, 89, 102, 29);
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				camConnection.disconnect();
+				if (camConnection != null) {
+					camConnection.disconnect();
+				}
 			}
 		});
-		btnDisconnect.setBounds(118, 110, 102, 29);
-		getContentPane().add(btnDisconnect);
-
-		JLabel lblHostAddress = new JLabel("Host address");
-		lblHostAddress.setBounds(10, 37, 83, 14);
-		getContentPane().add(lblHostAddress);
+		panelConnection.add(btnDisconnect);
+		panelConnection.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { textFieldHostAddress, btnConnect, btnDisconnect }));	
 		
-		textFieldHostAddress = new JTextField();
-		textFieldHostAddress.setBounds(105, 30, 115, 28);
-		getContentPane().add(textFieldHostAddress);
-		textFieldHostAddress.setColumns(10);
-
-		JLabel lblPortNo = new JLabel("Port");
-		lblPortNo.setBounds(10, 77, 83, 14);
-		getContentPane().add(lblPortNo);
-
-		textFieldPortNumber = new JTextField();
-		textFieldPortNumber.setBounds(105, 70, 115, 28);
-		getContentPane().add(textFieldPortNumber);
-		textFieldPortNumber.setColumns(10);
+		// Set up logger
+		LogHandler logHandler = new LogHandler(textAreaLogger);
+		logger.addHandler(logHandler);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// getter functions for gui elements
+	// Getter functions for gui elements
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private InetAddress getHostName() throws UnknownHostException {
@@ -109,7 +148,7 @@ public class PluginWindow extends JFrame {
 
 	private int getPort() throws NumberFormatException {
 		int port = 0;
-		port = Integer.valueOf(textFieldPortNumber.getText());
+		port = Integer.valueOf(textFieldPort.getText());
 		return port;
 	}
 }

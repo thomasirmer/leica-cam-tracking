@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import ij.IJ;
 
@@ -21,9 +22,11 @@ public class CAMConnection {
 	private InetAddress host;
 	private int port;
 
-	private Socket client = null;
+	private Socket clientSocket = null;
 	private DataOutputStream camOutput;
 	private DataInputStream camInput;
+	
+	private static final Logger logger = Logger.getGlobal();
 
 	public CAMConnection(InetAddress host, int port) {
 		this.host = host;
@@ -32,21 +35,30 @@ public class CAMConnection {
 
 	public void connect() throws IOException {
 		// Establish connection to given host and create streams
-		client = new Socket(host, port);
+		clientSocket = new Socket(host, port);
 
-		OutputStream outputStream = client.getOutputStream();
+		OutputStream outputStream = clientSocket.getOutputStream();
 		camOutput = new DataOutputStream(outputStream);
-		InputStream inputStream = client.getInputStream();
+		InputStream inputStream = clientSocket.getInputStream();
 		camInput = new DataInputStream(inputStream);
+		
+		logger.info("Connection established to " + host.getHostAddress() + ":" + port);
 	}
 
 	public void disconnect() {
-		if (!(client == null)) { // Disconnect only if necessary
+		if (!(clientSocket == null)) { // Disconnect only if necessary
 			try {
-				camOutput.writeUTF("[CLIENT] Goodbye!");
-				client.close();
+				logger.info("Sending 'ErrorCode = 10054' --> needed for Windows socket.");
+				camOutput.writeUTF("ErrorCode = 10054"); // needed for windows socket to close connection to java socket
+				camOutput.flush();
+				
+				camInput.close();
+				camOutput.close();
+				
+				clientSocket.close();
+				logger.info("Connection closed.");
 			} catch (IOException e) {
-				IJ.showMessage("Error", "Failed to close socket" + "\n" + e.getMessage());
+				logger.severe("Failed to close socket: " + e.getMessage());
 			}
 		} else return;
 	}
