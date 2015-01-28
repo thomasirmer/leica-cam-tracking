@@ -9,7 +9,6 @@ import ij.plugin.PlugIn;
  *
  */
 public class Leica_CAM_Tracking implements PlugIn {
-
 	@Override
 	public void run(String arg0) {
 		// Create GUI and show

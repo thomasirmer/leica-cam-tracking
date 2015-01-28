@@ -41,16 +41,13 @@ public class CAMConnection {
 	}
 
 	public void disconnect() {
-		// Disconnect if necessary
-		if (client == null) {
-			return;
-		}
-
-		try {
-			camOutput.writeUTF("[CLIENT] Goodbye!");
-			client.close();
-		} catch (IOException e) {
-			IJ.showMessage("Error", "Failed to close socket" + "\n" + e.getMessage());
-		}
+		if (!(client == null)) { // Disconnect only if necessary
+			try {
+				camOutput.writeUTF("[CLIENT] Goodbye!");
+				client.close();
+			} catch (IOException e) {
+				IJ.showMessage("Error", "Failed to close socket" + "\n" + e.getMessage());
+			}
+		} else return;
 	}
 }
