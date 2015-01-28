@@ -1,5 +1,3 @@
-import ij.IJ;
-
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -13,15 +11,12 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
-
-import com.sun.net.ssl.internal.www.protocol.https.Handler;
-
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
 
 /**
  * 

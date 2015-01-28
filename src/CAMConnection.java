@@ -7,8 +7,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-import ij.IJ;
-
 /**
  * 
  */
@@ -48,7 +46,7 @@ public class CAMConnection {
 	public void disconnect() {
 		if (!(clientSocket == null)) { // Disconnect only if necessary
 			try {
-				logger.info("Sending 'ErrorCode = 10054' --> needed for Windows socket.");
+				logger.info("Sending 'ErrorCode = 10054' --> needed for Windows socket to close properly.");
 				camOutput.writeUTF("ErrorCode = 10054"); // needed for windows socket to close connection to java socket
 				camOutput.flush();
 				

@@ -13,16 +13,10 @@ public class LogHandler extends java.util.logging.Handler {
 	}
 	
 	@Override
-	public void close() throws SecurityException {
-		// TODO Auto-generated method stub
-		
-	}
+	public void close() throws SecurityException {}
 
 	@Override
-	public void flush() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void flush() {}
 
 	@Override
 	public void publish(LogRecord record) {
