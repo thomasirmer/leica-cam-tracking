@@ -6,3 +6,5 @@
 /org/
 /LogHandler.class
 /LogHandler$1.class
+/CAMConnection$SenderThread.class
+/CAMConnection$ReceiveThread.class

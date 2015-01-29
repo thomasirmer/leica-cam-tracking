@@ -6,8 +6,6 @@ import java.awt.Toolkit;
 
 /**
  * This class represents the ImageJ plug-in. It sets up the GUI and shows it on the screen.
- * 
- * @author Thomas Irmer
  */
 public class Leica_CAM_Tracking implements PlugIn {
 	
@@ -24,7 +22,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// HELPER FUNCTIONS
+	// Helper functions
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
 	/**

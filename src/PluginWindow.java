@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
 /**
- * @author Thomas Irmer
+ *
  */
 public class PluginWindow extends JFrame {
 
@@ -71,9 +71,10 @@ public class PluginWindow extends JFrame {
 		panelConnection.add(lblHostAddress);
 
 		textFieldHostAddress = new JTextField();
+		textFieldHostAddress.setText("127.0.0.1");
 		textFieldHostAddress.setBounds(103, 11, 115, 28);
 		panelConnection.add(textFieldHostAddress);
-		textFieldHostAddress.setColumns(10);
+		textFieldHostAddress.setColumns(15);
 
 		JLabel lblPort = new JLabel("Port");
 		lblPort.setBounds(10, 57, 83, 14);
@@ -84,7 +85,7 @@ public class PluginWindow extends JFrame {
 		panelConnection.add(textFieldPort);
 		textFieldPort.setText("8895");
 		textFieldPort.setEditable(false);
-		textFieldPort.setColumns(10);
+		textFieldPort.setColumns(5);
 		
 		JScrollPane scrollPaneLogger = new JScrollPane();
 		scrollPaneLogger.setBounds(10, 331, 764, 220);
@@ -102,14 +103,15 @@ public class PluginWindow extends JFrame {
 		JButton btnConnect = new JButton("Connect");
 		btnConnect.setBounds(10, 89, 89, 29);
 		btnConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				try {
 					camConnection = new CAMConnection(getHostName(), getPort());
 					camConnection.connect();
-				} catch (UnknownHostException e1) {
-					logger.warning("Invalid host address format: " + e1.getMessage());
-				} catch (NumberFormatException e2) {
-					logger.warning("Invalid port number format: " + e2.getMessage());
+					camConnection.sendCAMCommand("Hallo CAM");
+				} catch (UnknownHostException e) {
+					logger.warning("Invalid host address format: " + e.getMessage());
+				} catch (NumberFormatException e) {
+					logger.warning("Invalid port number format: " + e.getMessage());
 				}
 			}
 		});
