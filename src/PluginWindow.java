@@ -1,46 +1,36 @@
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
-import org.eclipse.wb.swing.FocusTraversalOnArray;
-
-/**
- * 
- */
-
 /**
  * @author Thomas Irmer
- *
  */
 public class PluginWindow extends JFrame {
 
 	private static final long serialVersionUID = 5811095093777366932L;
 
+	
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Singleton construction
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	private static PluginWindow instance = null;
-	private JTextField textFieldHostAddress;
-	private JTextField textFieldPort;
-	private JTextArea textAreaLogger;
-
-	private CAMConnection camConnection;
-
-	private final static Logger logger = Logger.getGlobal();
-
-	// Replaces the constructor to provide a singleton interface.
-	// This method returns either the existing instance or creates it.
+	/**
+	 * Singleton constructor.
+	 * @return Either the present instance of <i>PluginWindow</i> or a new one.
+	 */
 	public static PluginWindow getInstance() {
 		if (instance == null)
 			return new PluginWindow();
@@ -48,8 +38,20 @@ public class PluginWindow extends JFrame {
 			return instance;
 	}
 
-	// Constructor is set to private because this class is a singleton.
-	// To get the instance of this class call getInstance().
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Fields for common use
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	
+	private JTextField textFieldHostAddress;
+	private JTextField textFieldPort;
+
+	private CAMConnection camConnection;
+	private final static Logger logger = Logger.getGlobal();
+
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// GUI and action listener
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	private PluginWindow() {
 		getContentPane().setLayout(null);
 
@@ -87,13 +89,16 @@ public class PluginWindow extends JFrame {
 		JScrollPane scrollPaneLogger = new JScrollPane();
 		scrollPaneLogger.setBounds(10, 331, 764, 220);
 		getContentPane().add(scrollPaneLogger);
-
-		textAreaLogger = new JTextArea();
+		
+		JEditorPane textAreaLogger = new JEditorPane();
 		scrollPaneLogger.setViewportView(textAreaLogger);
+		textAreaLogger.setContentType("text/html"); // set to HTML text to display different colors based on log level
+		textAreaLogger.setText("<html>\n<head>\n</head>\n<body>\n</body>\n</html>");
 
-		// Button >>Connect<<
-		// Establish connection to given host at given port.
-		// Abort if any error occurs
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Connect"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		
 		JButton btnConnect = new JButton("Connect");
 		btnConnect.setBounds(10, 89, 89, 29);
 		btnConnect.addActionListener(new ActionListener() {
@@ -105,15 +110,15 @@ public class PluginWindow extends JFrame {
 					logger.warning("Invalid host address format: " + e1.getMessage());
 				} catch (NumberFormatException e2) {
 					logger.warning("Invalid port number format: " + e2.getMessage());
-				} catch (IOException e3) {
-					logger.warning("Connection failed: " + e3.getMessage());
 				}
 			}
 		});
 		panelConnection.add(btnConnect);
 
-		// Button >>Disconnect<<
-		// Disconnect from host.
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Disconnect"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		
 		JButton btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.setBounds(116, 89, 102, 29);
 		btnDisconnect.addActionListener(new ActionListener() {
@@ -124,15 +129,11 @@ public class PluginWindow extends JFrame {
 			}
 		});
 		panelConnection.add(btnDisconnect);
-		panelConnection.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { textFieldHostAddress, btnConnect, btnDisconnect }));	
-		
-		// Set up logger
-		LogHandler logHandler = new LogHandler(textAreaLogger);
-		logger.addHandler(logHandler);
+		logger.addHandler(new LogHandler(textAreaLogger));
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Getter functions for gui elements
+	// Getter functions for GUI elements
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private InetAddress getHostName() throws UnknownHostException {
