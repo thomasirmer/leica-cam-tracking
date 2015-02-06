@@ -19,7 +19,7 @@ public class CAMConnection {
 	// Constants
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static final int RECV_TIMEOUT_MS = 125;
+	private static final int RECV_TIMEOUT_MS = 250;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Connection fields
@@ -27,9 +27,9 @@ public class CAMConnection {
 
 	private InetAddress host;
 	private int port;
-	private Socket clientSocket = null;
-	private PrintWriter outToCAM;
-	private BufferedReader inFromCAM;
+	private Socket clientSocket 		= null;
+	private PrintWriter outToCAM 		= null;
+	private BufferedReader inFromCAM 	= null;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Concurrent send-/receive buffer and threads
@@ -38,14 +38,18 @@ public class CAMConnection {
 	private Thread sender;
 	private Thread receiver;
 	private volatile boolean sendRecvThreadsShouldRun;
-	private BlockingQueue<String> sendBuffer;
-	private BlockingQueue<String> receiveBuffer;
+	private BlockingQueue<String> sendBuffer	= null;
+	private BlockingQueue<String> receiveBuffer = null;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// other
+	// Local fields
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private static final Logger logger = Logger.getGlobal();
+
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Construction
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	public CAMConnection(InetAddress host, int port) {
 		this.host = host;
@@ -58,7 +62,6 @@ public class CAMConnection {
 	public void connect() {
 		try {
 			clientSocket = new Socket(host, port);
-
 			// output
 			OutputStream outputStream = clientSocket.getOutputStream();
 			outToCAM = new PrintWriter(outputStream);
@@ -69,12 +72,15 @@ public class CAMConnection {
 			inFromCAM = new BufferedReader(new InputStreamReader(inputStream));
 			
 			// send-/receive threads
-			sendBuffer = new LinkedBlockingQueue<String>();
-			receiveBuffer = new LinkedBlockingQueue<String>();
+			sendBuffer 		= new LinkedBlockingQueue<String>();
+			receiveBuffer 	= new LinkedBlockingQueue<String>();
+			
 			sendRecvThreadsShouldRun = true;
+			
 			sender = new Thread(new SenderThread());
 			sender.setDaemon(true);
 			sender.start();
+			
 			receiver = new Thread(new ReceiveThread());
 			receiver.setDaemon(true);
 			receiver.start();
@@ -121,6 +127,14 @@ public class CAMConnection {
 		}
 	}
 
+	public boolean isConnected() {
+		if (clientSocket != null)
+			if (clientSocket.isConnected())
+				return true;
+		return false;
+
+	}
+
 	/**
 	 * Inserts the given command to the send buffer.
 	 * 
@@ -131,7 +145,7 @@ public class CAMConnection {
 		try {
 			sendBuffer.put(command);
 		} catch (InterruptedException e) {
-			logger.warning("Interrupted while sending command: " + command + ">Error: " + e.getMessage() + "<");
+			logger.warning("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
 		}
 	}
 
@@ -146,7 +160,7 @@ public class CAMConnection {
 		try {
 			command = receiveBuffer.take();
 		} catch (InterruptedException e) {
-			logger.warning("Interrupted while receiving command: " + e.getMessage());
+			logger.warning("Interrupted while receiving command: " + "\n> Error: " + e.getMessage() + " <");
 		}
 
 		return command;
