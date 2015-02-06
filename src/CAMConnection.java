@@ -151,6 +151,10 @@ public class CAMConnection {
 
 		return command;
 	}
+	
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// SenderThread
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	/**
 	 * Wait for the send buffer. If any command is put into the send buffer this
@@ -168,16 +172,20 @@ public class CAMConnection {
 					outToCAM.println(command);
 					outToCAM.flush();
 					logger.info("Sent CAM command: " + command);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) {} // No need to handle this
 			}
 			
 			logger.info("Terminating SenderThread.");
 		}
 	}
 
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// ReceiveThread
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	/**
-	 * Check input stream every RECV_THREAD_SLEEP_TIME milliseconds
-	 * and put received commands into receive buffer.
+	 * Check input stream every RECV_THREAD_SLEEP_TIME milliseconds and put
+	 * received commands into receive buffer.
 	 */
 	private class ReceiveThread implements Runnable {
 
@@ -187,15 +195,14 @@ public class CAMConnection {
 
 			while (sendRecvThreadsShouldRun) {
 				try {
-					// TODO: readLine is blocking and non-interruptible --> find a better solution!
 					String command = "";
-					command = inFromCAM.readLine();
+					command = inFromCAM.readLine(); // realized with timeout at construction of inputStream
 					if (!command.isEmpty()) {
 						receiveBuffer.put(command);
 						logger.info("Received CAM command: " + command);
 					}
-				} catch (IOException e) { // No log because IOException is just caused by readLine timeout.
-				} catch (InterruptedException e) {}
+				} catch (IOException e) { // No log because IOException is just caused by readLine() timeout.
+				} catch (InterruptedException e) {} // No need to handle this
 			}
 			
 			logger.info("Terminating ReceiveThread.");
