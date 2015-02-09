@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -36,29 +37,30 @@ public class PluginWindow extends JFrame {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private static PluginWindow instance = null;
-	
+
 	/**
 	 * Singleton constructor.
+	 * 
 	 * @return Either the present instance of <i>PluginWindow</i> or a new one.
 	 */
-	public static PluginWindow getInstance() {
+	public static synchronized PluginWindow getInstance() {
 		if (instance == null)
-			return new PluginWindow();
-		else
-			return instance;
+			instance = new PluginWindow();
+		return instance;
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Fields for common use
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	
+
 	private JTextField textFieldHostAddress;
 	private JTextField textFieldPort;
-	
+
 	private JPanel panelImageView;
 	private BlockingQueue<File> imageQueue;
 
 	private CAMConnection camConnection;
+	private CAMCommandParser camCommandParser;
 	private Logger logger = Logger.getGlobal();
 	private LogHandler logHandler;
 	private JTextField textFieldImagePath;
@@ -68,64 +70,76 @@ public class PluginWindow extends JFrame {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private PluginWindow() {
+		camCommandParser = new CAMCommandParser();
+		
+		getContentPane().setFont(new Font("Ubuntu", Font.PLAIN, 12));
+		setFont(new Font("Ubuntu", Font.PLAIN, 12));
 		setIconImage(Toolkit.getDefaultToolkit().getImage(PluginWindow.class.getResource("/icon/microscope_2.ico")));
 		setResizable(false);
 		setTitle("Leica CAM Tracking");
 		getContentPane().setLayout(null);
 
 		JLabel lblLeicaCamInterface = new JLabel("Leica CAM Interface");
-		lblLeicaCamInterface.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		lblLeicaCamInterface.setBounds(10, 11, 210, 14);
+		lblLeicaCamInterface.setFont(new Font("Ubuntu", Font.PLAIN, 12));
+		lblLeicaCamInterface.setBounds(10, 11, 190, 14);
 		getContentPane().add(lblLeicaCamInterface);
 
 		JPanel panelConnection = new JPanel();
 		panelConnection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelConnection.setBounds(10, 36, 230, 128);
+		panelConnection.setBounds(10, 36, 190, 128);
 		getContentPane().add(panelConnection);
 		panelConnection.setLayout(null);
 
-		JLabel lblHostAddress = new JLabel("Host address");
-		lblHostAddress.setBounds(10, 18, 83, 14);
+		JLabel lblHostAddress = new JLabel("Host IP");
+		lblHostAddress.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		lblHostAddress.setBounds(10, 18, 33, 14);
 		panelConnection.add(lblHostAddress);
 
 		textFieldHostAddress = new JTextField();
+		textFieldHostAddress.setFont(new Font("Ubuntu Mono", Font.PLAIN, 10));
 		textFieldHostAddress.setText("127.0.0.1");
-		textFieldHostAddress.setBounds(103, 11, 115, 28);
+		textFieldHostAddress.setBounds(53, 12, 125, 28);
 		panelConnection.add(textFieldHostAddress);
 		textFieldHostAddress.setColumns(15);
 
 		JLabel lblPort = new JLabel("Port");
-		lblPort.setBounds(10, 57, 83, 14);
+		lblPort.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		lblPort.setBounds(10, 57, 33, 14);
 		panelConnection.add(lblPort);
 
 		textFieldPort = new JTextField();
-		textFieldPort.setBounds(103, 50, 115, 28);
+		textFieldPort.setFont(new Font("Ubuntu Mono", Font.PLAIN, 10));
+		textFieldPort.setBounds(53, 51, 125, 28);
 		panelConnection.add(textFieldPort);
 		textFieldPort.setText("8895");
 		textFieldPort.setEditable(false);
 		textFieldPort.setColumns(5);
-		
+
 		JScrollPane scrollPaneLogging = new JScrollPane();
-		scrollPaneLogging.setBounds(10, 331, 764, 220);
+		scrollPaneLogging.setBounds(10, 541, 774, 220);
 		getContentPane().add(scrollPaneLogging);
-		
+
 		JEditorPane textAreaLogging = new JEditorPane();
+		textAreaLogging.setFont(new Font("Ubuntu", Font.PLAIN, 10));
 		scrollPaneLogging.setViewportView(textAreaLogging);
-		textAreaLogging.setContentType("text/html"); // set to HTML text to display different colors based on log level
+		// set to HTML text to display different colors based on log level
+		textAreaLogging.setContentType("text/html");
 		textAreaLogging.setText("<html>\n<head>\n</head>\n<body>\n</body>\n</html>");
 
 		logHandler = new LogHandler(textAreaLogging);
 		logger.addHandler(logHandler);
-		
+
 		JLabel lblLogView = new JLabel("Log View");
+		lblLogView.setFont(new Font("Ubuntu", Font.PLAIN, 10));
 		scrollPaneLogging.setColumnHeaderView(lblLogView);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "Connect"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		
+
 		JButton btnConnect = new JButton("Connect");
-		btnConnect.setBounds(10, 89, 89, 29);
+		btnConnect.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		btnConnect.setBounds(10, 89, 73, 29);
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
@@ -146,9 +160,10 @@ public class PluginWindow extends JFrame {
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "Disconnect"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		
+
 		JButton btnDisconnect = new JButton("Disconnect");
-		btnDisconnect.setBounds(116, 89, 102, 29);
+		btnDisconnect.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		btnDisconnect.setBounds(93, 89, 85, 29);
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (camConnection != null) {
@@ -157,22 +172,23 @@ public class PluginWindow extends JFrame {
 			}
 		});
 		panelConnection.add(btnDisconnect);
-		
+
 		panelImageView = new JPanel();
 		panelImageView.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelImageView.setBounds(250, 36, 524, 284);
+		panelImageView.setBounds(210, 36, 574, 494);
 		getContentPane().add(panelImageView);
 		panelImageView.setLayout(new BorderLayout(0, 0));
-		
+
 		JPanel panelPathSelection = new JPanel();
 		panelPathSelection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelPathSelection.setBounds(10, 175, 230, 145);
+		panelPathSelection.setBounds(10, 433, 190, 97);
 		getContentPane().add(panelPathSelection);
 		panelPathSelection.setLayout(null);
-		
+
 		textFieldImagePath = new JTextField();
+		textFieldImagePath.setFont(new Font("Ubuntu", Font.PLAIN, 10));
 		textFieldImagePath.setEditable(false);
-		textFieldImagePath.setBounds(10, 11, 155, 20);
+		textFieldImagePath.setBounds(10, 34, 170, 20);
 		panelPathSelection.add(textFieldImagePath);
 		textFieldImagePath.setColumns(10);
 
@@ -180,19 +196,21 @@ public class PluginWindow extends JFrame {
 		// Button "Select path"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command übermittelt wird.
-		JButton buttonSelectPath = new JButton("...");
+		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command
+		// übermittelt wird.
+		JButton buttonSelectPath = new JButton("Choose");
+		buttonSelectPath.setFont(new Font("Ubuntu", Font.PLAIN, 10));
 		buttonSelectPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setDialogTitle("Choose the path where the microscope will save its images...");
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				int returnValue = chooser.showDialog(PluginWindow.instance, "Select");
-				
+
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					File directory = chooser.getSelectedFile();
 					textFieldImagePath.setText(directory.getAbsolutePath());
-					
+
 					// TODO: DEBUG
 					imageQueue = new LinkedBlockingQueue<File>();
 					File[] files = directory.listFiles();
@@ -200,17 +218,56 @@ public class PluginWindow extends JFrame {
 						try {
 							if (file.getAbsolutePath().endsWith("jpg"))
 								imageQueue.put(file);
-						} catch (InterruptedException e1) {}
+						} catch (InterruptedException e1) {
+						}
 					}
-					
+
 					Thread imagePresenter = new Thread(new ImagePresenterThread());
 					imagePresenter.start();
 					// END: DEBUG
 				}
 			}
 		});
-		buttonSelectPath.setBounds(175, 10, 45, 23);
+		buttonSelectPath.setBounds(10, 65, 87, 23);
 		panelPathSelection.add(buttonSelectPath);
+		
+		JLabel lblImagePath = new JLabel("Image path");
+		lblImagePath.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		lblImagePath.setBounds(10, 11, 170, 12);
+		panelPathSelection.add(lblImagePath);
+		
+		JPanel panelCAMCommand = new JPanel();
+		panelCAMCommand.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelCAMCommand.setBounds(10, 175, 190, 247);
+		getContentPane().add(panelCAMCommand);
+		panelCAMCommand.setLayout(null);
+		
+		JLabel lblCamCommand = new JLabel("CAM Command");
+		lblCamCommand.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		lblCamCommand.setBounds(10, 10, 170, 12);
+		panelCAMCommand.add(lblCamCommand);
+		
+		JTextArea textAreaCamCommand = new JTextArea();
+		textAreaCamCommand.setLineWrap(true);
+		textAreaCamCommand.setFont(new Font("Ubuntu Mono", Font.PLAIN, 10));
+		textAreaCamCommand.setBounds(10, 33, 170, 169);
+		panelCAMCommand.add(textAreaCamCommand);
+		
+		JButton btnSendCommand = new JButton("Send command");
+		btnSendCommand.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (camConnection.isConnected()) {
+					String camCommand = textAreaCamCommand.getText();
+					if (camCommandParser.isValidCAMCommand(camCommand))
+						camConnection.sendCAMCommand(camCommand);
+					else
+						logger.severe("Wrong CAM Command structure.");
+				}
+			}
+		});
+		btnSendCommand.setFont(new Font("Ubuntu", Font.PLAIN, 10));
+		btnSendCommand.setBounds(10, 213, 105, 23);
+		panelCAMCommand.add(btnSendCommand);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -228,29 +285,34 @@ public class PluginWindow extends JFrame {
 		port = Integer.valueOf(textFieldPort.getText());
 		return port;
 	}
-	
+
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Getter functions for GUI elements
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	
+
 	private class ImagePresenterThread implements Runnable {
 
-		// TODO: Dieser Thread soll an einer BlockingQueue darauf warten, dass neue Bilder angeboten werden.
-		// Die Bilder werden dann in eine Queue geschoben, wenn ein CAM Command empfangen wird, dass den Pfad zu diesem Bild mitliefert.
-		// Immer wenn ein neues Bild angeboten wird, aktualisiert dieser Thread die ImageView.
-		
+		// TODO: Dieser Thread soll an einer BlockingQueue darauf warten, dass
+		// neue Bilder angeboten werden.
+		// Die Bilder werden dann in eine Queue geschoben, wenn ein CAM Command
+		// empfangen wird, dass den Pfad zu diesem Bild mitliefert.
+		// Immer wenn ein neues Bild angeboten wird, aktualisiert dieser Thread
+		// die ImageView.
+
 		@Override
 		public void run() {
 			try {
-				while (true) { // TODO: Sollte durch sinnvolle Variable ersetzt werden
+				while (true) { // TODO: Sollte durch sinnvolle Variable ersetzt
+								// werden
 					File file = imageQueue.take();
 					BufferedImage image = ImageIO.read(file);
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(image, 0, 0, null);
 					Thread.sleep(2500);
 				}
-			} catch (InterruptedException | IOException e) {}
+			} catch (InterruptedException | IOException e) {
+			}
 		}
-		
+
 	}
 }

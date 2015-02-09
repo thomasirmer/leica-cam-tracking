@@ -15,7 +15,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private static final int GUI_WIDTH = 800;
-	private static final int GUI_HEIGHT = 600;
+	private static final int GUI_HEIGHT = 800;
 	
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Fields

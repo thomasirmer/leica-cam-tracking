@@ -39,7 +39,7 @@ public class LogHandler extends java.util.logging.Handler {
 					fontColor = "#990000"; // red
 				
 				// append log message to text field
-				String newLogMessage = "<font face=\"Tahoma\" size=\"3\" color=\"" + fontColor + "\">" + "["
+				String newLogMessage = "<font face=\"Ubuntu\" size=\"3\" color=\"" + fontColor + "\">" + "["
 						+ record.getLevel() + "] " + record.getMessage() + "</font><br>";
 				textArea.setText(oldLoggerText[0] + newLogMessage + "</body>" + oldLoggerText[1]);
 			}
