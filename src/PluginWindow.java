@@ -36,6 +36,7 @@ public class PluginWindow extends JFrame {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private static PluginWindow instance = null;
+	
 	/**
 	 * Singleton constructor.
 	 * @return Either the present instance of <i>PluginWindow</i> or a new one.
@@ -58,7 +59,8 @@ public class PluginWindow extends JFrame {
 	private BlockingQueue<File> imageQueue;
 
 	private CAMConnection camConnection;
-	private final static Logger logger = Logger.getGlobal();
+	private Logger logger = Logger.getGlobal();
+	private LogHandler logHandler;
 	private JTextField textFieldImagePath;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -112,7 +114,8 @@ public class PluginWindow extends JFrame {
 		textAreaLogging.setContentType("text/html"); // set to HTML text to display different colors based on log level
 		textAreaLogging.setText("<html>\n<head>\n</head>\n<body>\n</body>\n</html>");
 
-		logger.addHandler(new LogHandler(textAreaLogging));
+		logHandler = new LogHandler(textAreaLogging);
+		logger.addHandler(logHandler);
 		
 		JLabel lblLogView = new JLabel("Log View");
 		scrollPaneLogging.setColumnHeaderView(lblLogView);
@@ -177,7 +180,7 @@ public class PluginWindow extends JFrame {
 		// Button "Select path"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		// TODO: Möglicherweise nicht notwendig
+		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command übermittelt wird.
 		JButton buttonSelectPath = new JButton("...");
 		buttonSelectPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -242,7 +245,6 @@ public class PluginWindow extends JFrame {
 				while (true) { // TODO: Sollte durch sinnvolle Variable ersetzt werden
 					File file = imageQueue.take();
 					BufferedImage image = ImageIO.read(file);
-					JLabel imageView = new JLabel(new ImageIcon(image));
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(image, 0, 0, null);
 					Thread.sleep(2500);

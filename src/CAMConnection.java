@@ -155,15 +155,14 @@ public class CAMConnection {
 	 * @return last received CAM command
 	 */
 	public String receiveCAMCommand() {
-		String command = "";
-
+		String camCommand = "";
 		try {
-			command = receiveBuffer.take();
+			camCommand = receiveBuffer.take();
 		} catch (InterruptedException e) {
 			logger.warning("Interrupted while receiving command: " + "\n> Error: " + e.getMessage() + " <");
 		}
 
-		return command;
+		return camCommand;
 	}
 	
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -186,10 +185,12 @@ public class CAMConnection {
 					outToCAM.println(command);
 					outToCAM.flush();
 					logger.info("Sent CAM command: " + command);
+					int delayTime = 50; // delay for CAM Commands --> necessary for multiple CAM Commands (due to CAM documentation)
+					Thread.sleep(delayTime);
 				} catch (InterruptedException e) {} // No need to handle this
 			}
 			
-			logger.info("Terminating SenderThread.");
+			logger.info("SenderThread terminated.");
 		}
 	}
 
@@ -219,7 +220,7 @@ public class CAMConnection {
 				} catch (InterruptedException e) {} // No need to handle this
 			}
 			
-			logger.info("Terminating ReceiveThread.");
+			logger.info("ReceiveThread terminated.");
 		}
 	}
 }
