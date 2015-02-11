@@ -11,7 +11,7 @@ import java.awt.Toolkit;
  * <b>Please note:</b> This class must be placed in the default-package for the plugin to work properly!
  * 
  * @author Thomas Irmer
- * @version  %I%, %G%
+ * @version  0.9
  */
 public class Leica_CAM_Tracking implements PlugIn {
 

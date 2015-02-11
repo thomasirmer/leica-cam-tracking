@@ -13,7 +13,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
@@ -21,9 +20,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
-import javax.swing.JTextArea;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is realized as a singleton.
@@ -309,16 +308,14 @@ public class PluginWindow extends JFrame {
 		@Override
 		public void run() {
 			try {
-				while (true) { // TODO: Sollte durch sinnvolle Variable ersetzt
-								// werden
+				while (true) {
 					File file = imageQueue.take();
 					BufferedImage image = ImageIO.read(file);
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(image, 0, 0, null);
 					Thread.sleep(2500);
 				}
-			} catch (InterruptedException | IOException e) {
-			}
+			} catch (InterruptedException | IOException e) {}
 		}
 
 	}
