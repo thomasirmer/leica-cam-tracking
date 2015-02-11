@@ -11,6 +11,8 @@ import javax.swing.SwingUtilities;
  * <br>warning: orange
  * <br>severe: red
  * <br>other: black
+ * 
+ * @author Thomas Irmer
  */
 public class LogHandler extends java.util.logging.Handler {
 

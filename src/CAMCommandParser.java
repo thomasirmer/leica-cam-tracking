@@ -1,7 +1,10 @@
 import java.util.Hashtable;
 
-import sun.invoke.empty.Empty;
-
+/**
+ * The CAMCommandParser is able to validate a given CAM command and parsing a CAM command to a dictionary format.
+ * 
+ * @author Thomas Irmer
+ */
 public class CAMCommandParser {
 
 	/**

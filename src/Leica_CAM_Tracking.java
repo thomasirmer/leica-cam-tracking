@@ -5,22 +5,23 @@ import java.awt.Point;
 import java.awt.Toolkit;
 
 /**
- * This class represents the ImageJ plug-in. It sets up the GUI and shows it on
+ * This class represents the ImageJ plugin. It sets up the GUI and shows it on
  * the screen.
+ * <br>
+ * <b>Please note:</b> This class must be placed in the default-package for the plugin to work properly!
+ * 
+ * @author Thomas Irmer
+ * @version  %I%, %G%
  */
 public class Leica_CAM_Tracking implements PlugIn {
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// GUI properties
+	// GUI
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private static final int GUI_WIDTH = 800;
 	private static final int GUI_HEIGHT = 800;
-	
-	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Fields
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	
+
 	PluginWindow gui = null;
 
 	@Override

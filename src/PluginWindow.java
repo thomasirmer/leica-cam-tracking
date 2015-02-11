@@ -26,7 +26,9 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.JTextArea;
 
 /**
- *
+ * Represents the GUI and the button actions of the ImageJ-plugin. This class is realized as a singleton.
+ * 
+ * @author Thomas Irmer
  */
 public class PluginWindow extends JFrame {
 
@@ -71,7 +73,7 @@ public class PluginWindow extends JFrame {
 
 	private PluginWindow() {
 		camCommandParser = new CAMCommandParser();
-		
+
 		getContentPane().setFont(new Font("Ubuntu", Font.PLAIN, 12));
 		setFont(new Font("Ubuntu", Font.PLAIN, 12));
 		setIconImage(Toolkit.getDefaultToolkit().getImage(PluginWindow.class.getResource("/icon/microscope_2.ico")));
@@ -223,6 +225,7 @@ public class PluginWindow extends JFrame {
 					}
 
 					Thread imagePresenter = new Thread(new ImagePresenterThread());
+					imagePresenter.setDaemon(true);
 					imagePresenter.start();
 					// END: DEBUG
 				}
@@ -230,29 +233,33 @@ public class PluginWindow extends JFrame {
 		});
 		buttonSelectPath.setBounds(10, 65, 87, 23);
 		panelPathSelection.add(buttonSelectPath);
-		
+
 		JLabel lblImagePath = new JLabel("Image path");
 		lblImagePath.setFont(new Font("Ubuntu", Font.PLAIN, 10));
 		lblImagePath.setBounds(10, 11, 170, 12);
 		panelPathSelection.add(lblImagePath);
-		
+
 		JPanel panelCAMCommand = new JPanel();
 		panelCAMCommand.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelCAMCommand.setBounds(10, 175, 190, 247);
 		getContentPane().add(panelCAMCommand);
 		panelCAMCommand.setLayout(null);
-		
+
 		JLabel lblCamCommand = new JLabel("CAM Command");
 		lblCamCommand.setFont(new Font("Ubuntu", Font.PLAIN, 10));
 		lblCamCommand.setBounds(10, 10, 170, 12);
 		panelCAMCommand.add(lblCamCommand);
-		
+
 		JTextArea textAreaCamCommand = new JTextArea();
 		textAreaCamCommand.setLineWrap(true);
 		textAreaCamCommand.setFont(new Font("Ubuntu Mono", Font.PLAIN, 10));
 		textAreaCamCommand.setBounds(10, 33, 170, 169);
 		panelCAMCommand.add(textAreaCamCommand);
-		
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Send CAM command"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 		JButton btnSendCommand = new JButton("Send command");
 		btnSendCommand.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -287,7 +294,7 @@ public class PluginWindow extends JFrame {
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Getter functions for GUI elements
+	// Image-Presenter-Thread
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private class ImagePresenterThread implements Runnable {

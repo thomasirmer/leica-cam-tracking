@@ -11,7 +11,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 /**
+ * This is a communication class with the CAM communication interface.
+ * It manages the connection itself like establishing the connection and disconnecting properly.
+ * It also holds the methods to send and receive commands to / from CAM interface.
+ * Send and receive are realized concurrent in daemon-threads.
  * 
+ * @author Thomas Irmer
  */
 public class CAMConnection {
 
@@ -19,7 +24,7 @@ public class CAMConnection {
 	// Constants
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static final int RECV_TIMEOUT_MS = 250;
+	private static final int RECV_TIMEOUT_MS = 250; // timeout for blocking receive functions
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Connection fields
@@ -32,7 +37,7 @@ public class CAMConnection {
 	private BufferedReader inFromCAM 	= null;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Concurrent send-/receive buffer and threads
+	// Send-/receive buffer and threads
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private Thread sender;
