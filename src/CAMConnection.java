@@ -80,6 +80,7 @@ public class CAMConnection {
 			sendBuffer 		= new LinkedBlockingQueue<String>();
 			receiveBuffer 	= new LinkedBlockingQueue<String>();
 			
+			// loop condition for threads
 			sendRecvThreadsShouldRun = true;
 			
 			sender = new Thread(new SenderThread());
@@ -105,14 +106,18 @@ public class CAMConnection {
 	public void disconnect() {
 		if (!(clientSocket == null)) {
 			try {
+				// loop condition for threads
 				sendRecvThreadsShouldRun = false;
 				
+				// kill threads
 				receiver.interrupt();
 				sender.interrupt();
 
+				// wait for threads to die
 				receiver.join();
 				sender.join();
 
+				// last message (manually)
 				logger.info("Sending 'ErrorCode = 10054' --> needed for Windows socket to close properly.");
 				outToCAM.println("ErrorCode = 10054");
 				outToCAM.flush();

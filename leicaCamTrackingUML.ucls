@@ -3,7 +3,7 @@
   realizations="true" associations="true" dependencies="false" nesting-relationships="true">  
   <class id="1" language="java" name="Leica_CAM_Tracking" project="leicaCamTracking" 
     file="/leicaCamTracking/src/Leica_CAM_Tracking.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="153" width="144" x="395" y="37"/>    
+    <position height="171" width="144" x="402" y="37"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -12,7 +12,7 @@
   </class>  
   <class id="2" language="java" name="CAMConnection" project="leicaCamTracking" 
     file="/leicaCamTracking/src/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="387" width="211" x="226" y="541"/>    
+    <position height="387" width="211" x="422" y="559"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -21,7 +21,7 @@
   </class>  
   <class id="3" language="java" name="CAMCommandParser" project="leicaCamTracking" 
     file="/leicaCamTracking/src/CAMCommandParser.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="117" width="321" x="477" y="541"/>    
+    <position height="153" width="321" x="41" y="37"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -30,7 +30,7 @@
   </class>  
   <class id="4" language="java" name="PluginWindow" project="leicaCamTracking" 
     file="/leicaCamTracking/src/PluginWindow.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="261" width="192" x="395" y="230"/>    
+    <position height="261" width="192" x="273" y="248"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -39,7 +39,7 @@
   </class>  
   <class id="5" language="java" name="LogHandler" project="leicaCamTracking" 
     file="/leicaCamTracking/src/LogHandler.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="153" width="145" x="41" y="541"/>    
+    <position height="153" width="145" x="41" y="559"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -48,7 +48,7 @@
   </class>  
   <class id="6" language="java" name="CAMConnection.ReceiveThread" project="leicaCamTracking" 
     file="/leicaCamTracking/src/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="109" x="152" y="968"/>    
+    <position height="99" width="109" x="348" y="986"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -57,7 +57,7 @@
   </class>  
   <class id="7" language="java" name="CAMConnection.SenderThread" project="leicaCamTracking" 
     file="/leicaCamTracking/src/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="105" x="301" y="968"/>    
+    <position height="99" width="105" x="497" y="986"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -66,7 +66,7 @@
   </class>  
   <class id="8" language="java" name="PluginWindow.ImagePresenterThread" project="leicaCamTracking" 
     file="/leicaCamTracking/src/PluginWindow.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="859" y="366"/>    
+    <position height="99" width="156" x="226" y="559"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -75,75 +75,63 @@
   </class>  
   <association id="9">    
     <end type="SOURCE" refId="4" navigable="false">      
-      <attribute id="10" name="camCommandParser">        
+      <attribute id="10" name="instance">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
       <multiplicity id="11" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
-    <end type="TARGET" refId="3" navigable="true"/>    
+    <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="12">    
+  <nesting id="12">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="7"/>  
+  </nesting>  
+  <association id="13">    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="13" name="gui">        
+      <attribute id="14" name="gui">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="14" minimum="0" maximum="1">        
+      <multiplicity id="15" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="15">    
+  <nesting id="16">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="6"/>  
+  </nesting>  
+  <association id="17">    
     <end type="SOURCE" refId="4" navigable="false">      
-      <attribute id="16" name="camConnection">        
+      <attribute id="18" name="camConnection">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="17" minimum="0" maximum="1">        
+      <multiplicity id="19" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="2" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <nesting id="18">    
-    <end type="SOURCE" refId="2"/>    
-    <end type="TARGET" refId="7"/>  
-  </nesting>  
-  <nesting id="19">    
-    <end type="SOURCE" refId="4"/>    
-    <end type="TARGET" refId="8"/>  
-  </nesting>  
   <association id="20">    
     <end type="SOURCE" refId="4" navigable="false">      
-      <attribute id="21" name="instance">        
+      <attribute id="21" name="logHandler">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
       <multiplicity id="22" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="23">    
-    <end type="SOURCE" refId="4" navigable="false">      
-      <attribute id="24" name="logHandler">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="25" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
     <end type="TARGET" refId="5" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <nesting id="26">    
-    <end type="SOURCE" refId="2"/>    
-    <end type="TARGET" refId="6"/>  
+  <nesting id="23">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="8"/>  
   </nesting>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    

@@ -2,6 +2,7 @@ import java.util.Hashtable;
 
 /**
  * The CAMCommandParser is able to validate a given CAM command and parsing a CAM command to a dictionary format.
+ * It also provides a bunch of predefined CAM commands that can be obtained from here.
  * 
  * @author Thomas Irmer
  */
@@ -16,7 +17,7 @@ public class CAMCommandParser {
 	 * @return hashmap containing all commands as keys and their parameter as
 	 *         values
 	 */
-	public Hashtable<String, String> parseStringToCAMCommand(String camCommand) {
+	public static Hashtable<String, String> parseStringToCAMCommand(String camCommand) {
 		// Hashtable that contains the parsed command
 		Hashtable<String, String> parsedCommand = new Hashtable<String, String>();
 
@@ -36,9 +37,11 @@ public class CAMCommandParser {
 		return parsedCommand;
 	}
 
-	public boolean isValidCAMCommand(String camCommand) {
+	public static boolean isValidCAMCommand(String camCommand) {
+		// split into {/command:parameter} blocks
 		String[] splittedCAMCommand = camCommand.split(" ");
 
+		// check for valid syntax per block
 		for (String block : splittedCAMCommand) {
 			if (block.contains(" ") || !block.contains("/") || !block.contains(":"))
 				return false;
@@ -50,5 +53,13 @@ public class CAMCommandParser {
 		}
 
 		return true;
+	}
+
+	public static String getCommandStageInfo() {
+		return "/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /cmd:getinfo /dev:stage";
+	}
+
+	public static String getCommandScanStatus() {
+		return "/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /cmd:getinfo /dev:scanstatus";
 	}
 }
