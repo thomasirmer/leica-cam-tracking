@@ -109,7 +109,7 @@ public class PluginWindow extends JFrame {
 		textFieldPort.setColumns(5);
 
 		JScrollPane scrollPaneLogging = new JScrollPane();
-		scrollPaneLogging.setBounds(10, 541, 774, 220);
+		scrollPaneLogging.setBounds(210, 701, 1054, 220);
 		getContentPane().add(scrollPaneLogging);
 
 		JEditorPane textAreaLogging = new JEditorPane();
@@ -168,13 +168,13 @@ public class PluginWindow extends JFrame {
 
 		panelImageView = new JPanel();
 		panelImageView.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelImageView.setBounds(210, 11, 574, 519);
+		panelImageView.setBounds(210, 11, 1054, 679);
 		getContentPane().add(panelImageView);
 		panelImageView.setLayout(null);
 
 		JPanel panelPathSelection = new JPanel();
 		panelPathSelection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelPathSelection.setBounds(10, 433, 190, 97);
+		panelPathSelection.setBounds(10, 147, 190, 97);
 		getContentPane().add(panelPathSelection);
 		panelPathSelection.setLayout(null);
 
@@ -232,7 +232,7 @@ public class PluginWindow extends JFrame {
 
 		JPanel panelCAMCommand = new JPanel();
 		panelCAMCommand.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelCAMCommand.setBounds(10, 147, 190, 275);
+		panelCAMCommand.setBounds(10, 255, 190, 666);
 		getContentPane().add(panelCAMCommand);
 		panelCAMCommand.setLayout(null);
 

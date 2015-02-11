@@ -24,7 +24,8 @@ public class CAMConnection {
 	// Constants
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static final int RECV_TIMEOUT_MS = 250; // timeout for blocking receive functions
+	// timeout for blocking receive functions
+	private static final int RECV_TIMEOUT_MS = 250;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Connection fields
