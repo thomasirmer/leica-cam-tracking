@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Hashtable;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
@@ -64,6 +65,10 @@ public class PluginWindow extends JFrame {
 	private Logger logger = Logger.getGlobal();
 	private LogHandler logHandler;
 	private JTextField textFieldImagePath;
+
+	private JLabel lblXposition;
+	private JLabel lblYposition;
+	private JLabel lblZposition;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// GUI and action listener
@@ -276,6 +281,9 @@ public class PluginWindow extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandStageInfo());
+					String returnedMessage = camConnection.receiveCAMCommand();
+					Hashtable<String,String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
+					setTextStagePosition(camCommand);
 				}
 			}
 		});
@@ -298,6 +306,48 @@ public class PluginWindow extends JFrame {
 		btnGetScanStatus.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		btnGetScanStatus.setBounds(10, 241, 123, 23);
 		panelCAMCommand.add(btnGetScanStatus);
+		
+		JLabel lblStagePosition = new JLabel("Stage Position");
+		lblStagePosition.setBounds(10, 275, 68, 14);
+		panelCAMCommand.add(lblStagePosition);
+		
+		JLabel lblX = new JLabel("x:");
+		lblX.setBounds(10, 300, 10, 14);
+		panelCAMCommand.add(lblX);
+		
+		JLabel lblY = new JLabel("y:");
+		lblY.setBounds(10, 325, 10, 14);
+		panelCAMCommand.add(lblY);
+		
+		JLabel lblZ = new JLabel("z:");
+		lblZ.setBounds(10, 350, 10, 14);
+		panelCAMCommand.add(lblZ);
+		
+		lblXposition = new JLabel("xPosition");
+		lblXposition.setBounds(30, 300, 103, 14);
+		panelCAMCommand.add(lblXposition);
+		
+		lblYposition = new JLabel("yPosition");
+		lblYposition.setBounds(30, 325, 103, 14);
+		panelCAMCommand.add(lblYposition);
+		
+		lblZposition = new JLabel("zPosition");
+		lblZposition.setBounds(30, 350, 103, 14);
+		panelCAMCommand.add(lblZposition);
+	}
+	
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Setter functions for GUI elements
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	
+	private void setTextStagePosition(Hashtable<String, String> camCommand) {
+		if (camCommand.get("app").equals("matrix") &&
+				camCommand.get("dev").equals("stage") &&
+				camCommand.get("info_for").equals(Leica_CAM_Tracking.PLUGIN_NAME)) {
+			lblXposition.setText(camCommand.get("xpos") + " " + camCommand.get("unit"));
+			lblYposition.setText(camCommand.get("ypos") + " " + camCommand.get("unit"));
+			lblZposition.setText(camCommand.get("zpos") + " " + camCommand.get("unit"));
+		}
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

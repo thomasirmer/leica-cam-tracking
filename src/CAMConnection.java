@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -25,7 +26,8 @@ public class CAMConnection {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	// timeout for blocking receive functions
-	private static final int RECV_TIMEOUT_MS = 250;
+	private static final int RECV_TIMEOUT_MS = 500;
+	private static final int WAIT_FOR_MSG_TIMEOUT_MS = 150;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Connection fields
@@ -65,7 +67,7 @@ public class CAMConnection {
 	/**
 	 * Connects to host and creates input- and output-streams.
 	 */
-	public void connect() {
+	public synchronized void connect() {
 		try {
 			clientSocket = new Socket(host, port);
 			// output
@@ -104,7 +106,7 @@ public class CAMConnection {
 	 * socket. It will prompt windows to close and remove the JAVA based socket
 	 * from the socket server list.
 	 */
-	public void disconnect() {
+	public synchronized void disconnect() {
 		if (!(clientSocket == null)) {
 			try {
 				// loop condition for threads
@@ -138,7 +140,7 @@ public class CAMConnection {
 		}
 	}
 
-	public boolean isConnected() {
+	public synchronized boolean isConnected() {
 		if (clientSocket != null)
 			if (clientSocket.isConnected())
 				return true;
@@ -152,7 +154,7 @@ public class CAMConnection {
 	 * @param command
 	 *            The CAM command
 	 */
-	public void sendCAMCommand(String command) {
+	public synchronized void sendCAMCommand(String command) {
 		try {
 			sendBuffer.put(command);
 		} catch (InterruptedException e) {
@@ -165,7 +167,7 @@ public class CAMConnection {
 	 * 
 	 * @return last received CAM command
 	 */
-	public String receiveCAMCommand() {
+	public synchronized String receiveCAMCommand() {
 		String camCommand = "";
 		try {
 			camCommand = receiveBuffer.take();

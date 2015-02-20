@@ -7,6 +7,8 @@ import java.util.Hashtable;
  * @author Thomas Irmer
  */
 public class CAMCommandParser {
+	
+	private CAMCommandParser() {}
 
 	/**
 	 * Parses a given CAM command and puts all commands and their parameters
