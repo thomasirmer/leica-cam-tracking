@@ -1,3 +1,5 @@
+import ij.IJ;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -31,6 +33,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.DefaultComboBoxModel;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is
@@ -343,31 +346,33 @@ public class PluginWindow extends JFrame {
 		lblZposition.setBounds(30, 350, 103, 14);
 		panelCAMCommand.add(lblZposition);
 		
-		JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panel.setBounds(10, 152, 190, 115);
-		getContentPane().add(panel);
-		panel.setLayout(null);
+		JPanel panelScreeningSettings = new JPanel();
+		panelScreeningSettings.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelScreeningSettings.setBounds(10, 152, 190, 115);
+		getContentPane().add(panelScreeningSettings);
+		panelScreeningSettings.setLayout(null);
 		
 		JLabel lblResolution = new JLabel("Resolution");
 		lblResolution.setBounds(10, 26, 50, 14);
-		panel.add(lblResolution);
+		panelScreeningSettings.add(lblResolution);
 		
-		JComboBox comboBox = new JComboBox();
-		comboBox.setBounds(85, 24, 95, 20);
-		panel.add(comboBox);
+		JComboBox comboBoxResolution = new JComboBox();
+		comboBoxResolution.setModel(new DefaultComboBoxModel(new String[] {"not yet implemented"}));
+		comboBoxResolution.setBounds(85, 24, 95, 20);
+		panelScreeningSettings.add(comboBoxResolution);
 		
 		JLabel lblImagesSec = new JLabel("Images / sec.");
 		lblImagesSec.setBounds(10, 58, 65, 14);
-		panel.add(lblImagesSec);
+		panelScreeningSettings.add(lblImagesSec);
 		
-		JComboBox comboBox_1 = new JComboBox();
-		comboBox_1.setBounds(85, 54, 95, 20);
-		panel.add(comboBox_1);
+		JComboBox comboBoxImagesSec = new JComboBox();
+		comboBoxImagesSec.setModel(new DefaultComboBoxModel(new String[] {"not yet implemented"}));
+		comboBoxImagesSec.setBounds(85, 54, 95, 20);
+		panelScreeningSettings.add(comboBoxImagesSec);
 		
 		JButton btnStartTracking = new JButton("Start Tracking");
 		btnStartTracking.setBounds(10, 83, 170, 23);
-		panel.add(btnStartTracking);
+		panelScreeningSettings.add(btnStartTracking);
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -376,9 +381,21 @@ public class PluginWindow extends JFrame {
 		menuBar.add(mnConnection);
 		
 		JMenuItem mntmSaveSettings = new JMenuItem("Save Settings...");
+		mntmSaveSettings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				// TODO: Implement saving connection settings
+				IJ.showMessage("Not yet implemented");
+			}
+		});
 		mnConnection.add(mntmSaveSettings);
 		
 		JMenuItem mntmLoadSettings = new JMenuItem("Load Settings...");
+		mntmLoadSettings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO: Implement loading connection settings
+				IJ.showMessage("Not yet implemented");
+			}
+		});
 		mnConnection.add(mntmLoadSettings);
 	}
 	
