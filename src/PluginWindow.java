@@ -1,6 +1,8 @@
+import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -14,18 +16,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
-import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is
@@ -86,38 +91,38 @@ public class PluginWindow extends JFrame {
 		getContentPane().setLayout(null);
 
 		JPanel panelConnection = new JPanel();
-		panelConnection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelConnection.setBounds(10, 11, 190, 125);
+		panelConnection.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Connection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panelConnection.setBounds(10, 11, 190, 130);
 		getContentPane().add(panelConnection);
 		panelConnection.setLayout(null);
 
 		JLabel lblHostAddress = new JLabel("Host IP");
 		lblHostAddress.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		lblHostAddress.setBounds(10, 18, 35, 14);
+		lblHostAddress.setBounds(10, 21, 35, 14);
 		panelConnection.add(lblHostAddress);
 
 		textFieldHostAddress = new JTextField();
 		textFieldHostAddress.setFont(new Font("Consolas", Font.PLAIN, 11));
 		textFieldHostAddress.setText("127.0.0.1");
-		textFieldHostAddress.setBounds(55, 12, 125, 28);
+		textFieldHostAddress.setBounds(55, 15, 125, 28);
 		panelConnection.add(textFieldHostAddress);
 		textFieldHostAddress.setColumns(15);
 
 		JLabel lblPort = new JLabel("Port");
 		lblPort.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		lblPort.setBounds(10, 57, 35, 14);
+		lblPort.setBounds(10, 60, 35, 14);
 		panelConnection.add(lblPort);
 
 		textFieldPort = new JTextField();
 		textFieldPort.setFont(new Font("Consolas", Font.PLAIN, 11));
-		textFieldPort.setBounds(55, 51, 125, 28);
+		textFieldPort.setBounds(55, 54, 125, 28);
 		panelConnection.add(textFieldPort);
 		textFieldPort.setText("8895");
 		textFieldPort.setEditable(false);
 		textFieldPort.setColumns(5);
 
 		JScrollPane scrollPaneLogging = new JScrollPane();
-		scrollPaneLogging.setBounds(210, 701, 1054, 220);
+		scrollPaneLogging.setBounds(210, 701, 1054, 199);
 		getContentPane().add(scrollPaneLogging);
 
 		JEditorPane textAreaLogging = new JEditorPane();
@@ -139,9 +144,8 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnConnect = new JButton("Connect");
-		btnConnect.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent event) {
+		btnConnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
 				try {
 					camConnection = new CAMConnection(getHostName(), getPort());
 					camConnection.connect();
@@ -156,7 +160,7 @@ public class PluginWindow extends JFrame {
 			}
 		});
 		btnConnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnConnect.setBounds(10, 89, 75, 29);
+		btnConnect.setBounds(10, 93, 75, 29);
 		panelConnection.add(btnConnect);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -164,27 +168,26 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnDisconnect = new JButton("Disconnect");
-		btnDisconnect.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		btnDisconnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
 				if (camConnection != null) {
 					camConnection.disconnect();
 				}
 			}
 		});
-		btnDisconnect.setBounds(93, 89, 87, 29);
+		btnDisconnect.setBounds(93, 93, 87, 29);
 		panelConnection.add(btnDisconnect);
 		btnDisconnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
 
 		panelImageView = new JPanel();
-		panelImageView.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelImageView.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Image View", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panelImageView.setBounds(210, 11, 1054, 679);
 		getContentPane().add(panelImageView);
 		panelImageView.setLayout(null);
 
 		JPanel panelPathSelection = new JPanel();
 		panelPathSelection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelPathSelection.setBounds(10, 147, 190, 97);
+		panelPathSelection.setBounds(10, 278, 190, 97);
 		getContentPane().add(panelPathSelection);
 		panelPathSelection.setLayout(null);
 
@@ -202,9 +205,8 @@ public class PluginWindow extends JFrame {
 		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command
 		// übermittelt wird.
 		JButton buttonSelectPath = new JButton("Choose");
-		buttonSelectPath.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		buttonSelectPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setDialogTitle("Choose the path where the microscope will save its images...");
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -225,7 +227,7 @@ public class PluginWindow extends JFrame {
 						}
 					}
 
-					Thread imagePresenter = new Thread(new ImagePresenterThread());
+					Thread imagePresenter = new Thread(new ImageLoaderThread());
 					imagePresenter.setDaemon(true);
 					imagePresenter.start();
 					// END: DEBUG
@@ -236,14 +238,14 @@ public class PluginWindow extends JFrame {
 		buttonSelectPath.setBounds(10, 65, 71, 23);
 		panelPathSelection.add(buttonSelectPath);
 
-		JLabel lblImagePath = new JLabel("Image path");
+		JLabel lblImagePath = new JLabel("Image path (maybe unnecessary)");
 		lblImagePath.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		lblImagePath.setBounds(10, 11, 170, 12);
 		panelPathSelection.add(lblImagePath);
 
 		JPanel panelCAMCommand = new JPanel();
 		panelCAMCommand.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelCAMCommand.setBounds(10, 255, 190, 666);
+		panelCAMCommand.setBounds(10, 386, 190, 514);
 		getContentPane().add(panelCAMCommand);
 		panelCAMCommand.setLayout(null);
 
@@ -263,9 +265,8 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnSendCommand = new JButton("Send command");
-		btnSendCommand.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		btnSendCommand.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
 					String camCommand = textAreaCamCommand.getText();
 					if (CAMCommandParser.isValidCAMCommand(camCommand))
@@ -284,9 +285,8 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnGetStagePosition = new JButton("Get stage position");
-		btnGetStagePosition.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		btnGetStagePosition.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandStageInfo());
 					String returnedMessage = camConnection.receiveCAMCommand();
@@ -304,9 +304,8 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnGetScanStatus = new JButton("Get scan status");
-		btnGetScanStatus.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		btnGetScanStatus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandScanStatus());
 				}
@@ -343,6 +342,44 @@ public class PluginWindow extends JFrame {
 		lblZposition = new JLabel("zPosition");
 		lblZposition.setBounds(30, 350, 103, 14);
 		panelCAMCommand.add(lblZposition);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel.setBounds(10, 152, 190, 115);
+		getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		JLabel lblResolution = new JLabel("Resolution");
+		lblResolution.setBounds(10, 26, 50, 14);
+		panel.add(lblResolution);
+		
+		JComboBox comboBox = new JComboBox();
+		comboBox.setBounds(85, 24, 95, 20);
+		panel.add(comboBox);
+		
+		JLabel lblImagesSec = new JLabel("Images / sec.");
+		lblImagesSec.setBounds(10, 58, 65, 14);
+		panel.add(lblImagesSec);
+		
+		JComboBox comboBox_1 = new JComboBox();
+		comboBox_1.setBounds(85, 54, 95, 20);
+		panel.add(comboBox_1);
+		
+		JButton btnStartTracking = new JButton("Start Tracking");
+		btnStartTracking.setBounds(10, 83, 170, 23);
+		panel.add(btnStartTracking);
+		
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+		
+		JMenu mnConnection = new JMenu("Connection");
+		menuBar.add(mnConnection);
+		
+		JMenuItem mntmSaveSettings = new JMenuItem("Save Settings...");
+		mnConnection.add(mntmSaveSettings);
+		
+		JMenuItem mntmLoadSettings = new JMenuItem("Load Settings...");
+		mnConnection.add(mntmLoadSettings);
 	}
 	
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -379,7 +416,7 @@ public class PluginWindow extends JFrame {
 	// Image-Presenter-Thread
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private class ImagePresenterThread implements Runnable {
+	private class ImageLoaderThread implements Runnable {
 
 		// TODO: Dieser Thread soll an einer BlockingQueue darauf warten, dass
 		// neue Bilder angeboten werden.
@@ -391,12 +428,20 @@ public class PluginWindow extends JFrame {
 		@Override
 		public void run() {
 			try {
+				CellTracking cellTracking = new CellTracking();
+				
 				while (true) {
 					File file = imageQueue.take();
 					BufferedImage image = ImageIO.read(file);
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(image, 0, 0, null);
-					Thread.sleep(2500);
+					
+					// TODO: Cell tracking and stage movement calculation comes here!
+					cellTracking.track(image); // or something ^^
+					
+					// END _TODO
+					
+					Thread.sleep(2500); // DEBUG
 				}
 			} catch (InterruptedException | IOException e) {
 			}
