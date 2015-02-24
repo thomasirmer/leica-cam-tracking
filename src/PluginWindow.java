@@ -1,7 +1,8 @@
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
@@ -23,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
+import javax.swing.SwingConstants;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is
@@ -77,7 +80,7 @@ public class PluginWindow extends JFrame {
 	private PluginWindow() {
 		getContentPane().setFont(new Font("Tahoma", Font.PLAIN, 11));
 		setFont(new Font("Tahoma", Font.PLAIN, 12));
-		setIconImage(Toolkit.getDefaultToolkit().getImage(PluginWindow.class.getResource("/icon/microscope_2.ico")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(PluginWindow.class.getResource("/icon/microscope_3.ico")));
 		setResizable(false);
 		setTitle("Leica CAM Tracking");
 		getContentPane().setLayout(null);
@@ -136,10 +139,9 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnConnect = new JButton("Connect");
-		btnConnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnConnect.setBounds(10, 89, 75, 29);
-		btnConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
+		btnConnect.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent event) {
 				try {
 					camConnection = new CAMConnection(getHostName(), getPort());
 					camConnection.connect();
@@ -153,6 +155,8 @@ public class PluginWindow extends JFrame {
 				}
 			}
 		});
+		btnConnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		btnConnect.setBounds(10, 89, 75, 29);
 		panelConnection.add(btnConnect);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -160,16 +164,17 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnDisconnect = new JButton("Disconnect");
-		btnDisconnect.setBounds(93, 89, 87, 29);
-		panelConnection.add(btnDisconnect);
-		btnDisconnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnDisconnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		btnDisconnect.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				if (camConnection != null) {
 					camConnection.disconnect();
 				}
 			}
 		});
+		btnDisconnect.setBounds(93, 89, 87, 29);
+		panelConnection.add(btnDisconnect);
+		btnDisconnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
 
 		panelImageView = new JPanel();
 		panelImageView.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -197,9 +202,9 @@ public class PluginWindow extends JFrame {
 		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command
 		// übermittelt wird.
 		JButton buttonSelectPath = new JButton("Choose");
-		buttonSelectPath.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		buttonSelectPath.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		buttonSelectPath.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setDialogTitle("Choose the path where the microscope will save its images...");
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -214,7 +219,7 @@ public class PluginWindow extends JFrame {
 					File[] files = directory.listFiles();
 					for (File file : files) {
 						try {
-							if (file.getAbsolutePath().endsWith("jpg"))
+							if (file.getAbsolutePath().endsWith("tif") || file.getAbsolutePath().endsWith("png") || file.getAbsolutePath().endsWith("jpg"))
 								imageQueue.put(file);
 						} catch (InterruptedException e1) {
 						}
@@ -227,6 +232,7 @@ public class PluginWindow extends JFrame {
 				}
 			}
 		});
+		buttonSelectPath.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		buttonSelectPath.setBounds(10, 65, 71, 23);
 		panelPathSelection.add(buttonSelectPath);
 
@@ -257,8 +263,9 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnSendCommand = new JButton("Send command");
-		btnSendCommand.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		btnSendCommand.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				if (camConnection.isConnected()) {
 					String camCommand = textAreaCamCommand.getText();
 					if (CAMCommandParser.isValidCAMCommand(camCommand))
@@ -277,8 +284,9 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnGetStagePosition = new JButton("Get stage position");
-		btnGetStagePosition.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+		btnGetStagePosition.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandStageInfo());
 					String returnedMessage = camConnection.receiveCAMCommand();
@@ -296,8 +304,9 @@ public class PluginWindow extends JFrame {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnGetScanStatus = new JButton("Get scan status");
-		btnGetScanStatus.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		btnGetScanStatus.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandScanStatus());
 				}
