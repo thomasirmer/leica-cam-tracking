@@ -1,3 +1,4 @@
+package LiveMicroscopy;
 import java.awt.image.BufferedImage;
 
 

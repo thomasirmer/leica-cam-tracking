@@ -1,3 +1,4 @@
+package LiveMicroscopy;
 import java.util.Hashtable;
 
 /**
