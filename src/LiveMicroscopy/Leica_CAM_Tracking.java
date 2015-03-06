@@ -26,7 +26,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	// Plugin properties
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	public static final String PLUGIN_NAME = Leica_CAM_Tracking.class.getName();
+	public static final String PLUGIN_NAME = "Leica_CAM_Tracking";
 	
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// GUI

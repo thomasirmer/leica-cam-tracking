@@ -1,15 +1,23 @@
 package LiveMicroscopy;
+
 import java.util.Hashtable;
 
 /**
- * The CAMCommandParser is able to validate a given CAM command and parsing a CAM command to a dictionary format.
- * It also provides a bunch of predefined CAM commands that can be obtained from here.
+ * The CAMCommandParser is able to validate a given CAM command and parsing a
+ * CAM command to a dictionary format. It also provides a bunch of predefined
+ * CAM commands that can be obtained from here.
  * 
  * @author Thomas Irmer
  */
 public class CAMCommandParser {
-	
-	private CAMCommandParser() {}
+
+	public static final int MOVE_ABSOLUTE = 0;
+	public static final int MOVE_RELATIVE = 1;
+	public static final int UNIT_METER = 0;
+	public static final int UNIT_MICRONS = 1;
+
+	private CAMCommandParser() {
+	}
 
 	/**
 	 * Parses a given CAM command and puts all commands and their parameters
@@ -64,5 +72,41 @@ public class CAMCommandParser {
 
 	public static String getCommandScanStatus() {
 		return "/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /cmd:getinfo /dev:scanstatus";
+	}
+
+	/**
+	 * 
+	 * @param xPos
+	 *            the new x-Position for the stage
+	 * @param yPos
+	 *            the new y-Position for the stage
+	 * @param moveType
+	 *            either absolute or relative (use the constants in this class:
+	 *            MOVE_ABSOLUTE, MOVE_RELATIVE)
+	 * @param unit
+	 *            either meter or microns (use the constants in this class:
+	 *            UNIT_METER, UNIT_MICRONS)
+	 * @return
+	 * @throws Exception
+	 */
+	public static String createCommandMoveStage(double xPos, double yPos, int type, int unit) throws Exception {
+		String typeS;
+		if (type == MOVE_ABSOLUTE)
+			typeS = "absolute";
+		else if (type == MOVE_RELATIVE)
+			typeS = "relative";
+		else
+			throw new Exception("Wrong movement type. Possible values: MOVE_ABSOLUTE, MOVE_RELATIVE");
+
+		String unitS;
+		if (unit == UNIT_METER)
+			unitS = "meter";
+		else if (unit == UNIT_MICRONS)
+			unitS = "microns";
+		else
+			throw new Exception("Wrong unit type. Possible values: UNIT_METER, UNIT_MICRONS");
+
+		return "/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /sys:1 /cmd:setposition /typ:" + typeS
+				+ " /dev:stage /unit:" + unitS + " /xpos:" + xPos + " /ypos:" + yPos;
 	}
 }

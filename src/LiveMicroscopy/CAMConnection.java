@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
@@ -54,49 +55,48 @@ public class CAMConnection {
 
 	private static final Logger logger = Logger.getGlobal();
 
-	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Construction
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-	public CAMConnection(InetAddress host, int port) {
-		this.host = host;
-		this.port = port;
-	}
-
 	/**
 	 * Connects to host and creates input- and output-streams.
 	 */
-	public synchronized void connect() {
+	public synchronized void connect(InetAddress host, int port) {
 		try {
 			clientSocket = new Socket(host, port);
-			// output
-			OutputStream outputStream = clientSocket.getOutputStream();
-			outToCAM = new PrintWriter(outputStream);
 			
-			// input
-			clientSocket.setSoTimeout(RECV_TIMEOUT_MS);
-			InputStream inputStream = clientSocket.getInputStream();
-			inFromCAM = new BufferedReader(new InputStreamReader(inputStream));
-			
-			// send-/receive threads
-			sendBuffer 		= new LinkedBlockingQueue<String>();
-			receiveBuffer 	= new LinkedBlockingQueue<String>();
-			
-			// loop condition for threads
-			sendRecvThreadsShouldRun = true;
-			
-			sender = new Thread(new SenderThread());
-			sender.setDaemon(true);
-			sender.start();
-			
-			receiver = new Thread(new ReceiveThread());
-			receiver.setDaemon(true);
-			receiver.start();
+			createStreams();
+			createSendRecvThreads();
 
 			logger.info("Connection established to " + host.getHostAddress() + ":" + port);
 		} catch (IOException e) {
 			logger.severe("Connection failed: " + e.getMessage());
 		}
+	}
+
+	private void createSendRecvThreads() {
+		// send-/receive threads
+		sendBuffer 		= new LinkedBlockingQueue<String>();
+		receiveBuffer 	= new LinkedBlockingQueue<String>();
+		
+		// loop condition for threads
+		sendRecvThreadsShouldRun = true;
+		
+		sender = new Thread(new SenderThread());
+		sender.setDaemon(true);
+		sender.start();
+		
+		receiver = new Thread(new ReceiveThread());
+		receiver.setDaemon(true);
+		receiver.start();
+	}
+
+	private void createStreams() throws IOException, SocketException {
+		// output
+		OutputStream outputStream = clientSocket.getOutputStream();
+		outToCAM = new PrintWriter(outputStream);
+		
+		// input
+		clientSocket.setSoTimeout(RECV_TIMEOUT_MS);
+		InputStream inputStream = clientSocket.getInputStream();
+		inFromCAM = new BufferedReader(new InputStreamReader(inputStream));
 	}
 
 	/**
@@ -108,16 +108,7 @@ public class CAMConnection {
 	public synchronized void disconnect() {
 		if (!(clientSocket == null)) {
 			try {
-				// loop condition for threads
-				sendRecvThreadsShouldRun = false;
-				
-				// kill threads
-				receiver.interrupt();
-				sender.interrupt();
-
-				// wait for threads to die
-				receiver.join();
-				sender.join();
+				stopSendRecvThreads();
 
 				// last message (manually)
 				logger.info("Sending 'ErrorCode = 10054' --> needed for Windows socket to close properly.");
@@ -137,6 +128,19 @@ public class CAMConnection {
 		} else {
 			return;
 		}
+	}
+
+	private void stopSendRecvThreads() throws InterruptedException {
+		// loop condition for threads
+		sendRecvThreadsShouldRun = false;
+		
+		// kill threads
+		receiver.interrupt();
+		sender.interrupt();
+
+		// wait for threads to die
+		receiver.join();
+		sender.join();
 	}
 
 	public synchronized boolean isConnected() {

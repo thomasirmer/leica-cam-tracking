@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 public class CellTracking {
 
 	public void track(BufferedImage image) {
-		// TODO Auto-generated method stub
 		
 	}
 

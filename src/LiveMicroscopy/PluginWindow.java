@@ -1,4 +1,5 @@
 package LiveMicroscopy;
+
 import ij.IJ;
 
 import java.awt.Color;
@@ -33,6 +34,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.SwingConstants;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is
@@ -71,14 +73,17 @@ public class PluginWindow extends JFrame {
 	private JPanel panelImageView;
 	private BlockingQueue<File> imageQueue;
 
-	private CAMConnection camConnection;
+	private CAMConnection camConnection = new CAMConnection();
 	private Logger logger = Logger.getGlobal();
 	private LogHandler logHandler;
 	private JTextField textFieldImagePath;
+	private JTextField textFieldXPos;
+	private JTextField textFieldYPos;
+	private JTextField textFieldZPos;
 
-	private JLabel lblXposition;
-	private JLabel lblYposition;
-	private JLabel lblZposition;
+	private JLabel lblUnitX;
+	private JLabel lblUnitY;
+	private JLabel lblUnitZ;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// GUI and action listener
@@ -93,7 +98,8 @@ public class PluginWindow extends JFrame {
 		getContentPane().setLayout(null);
 
 		JPanel panelConnection = new JPanel();
-		panelConnection.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Connection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panelConnection.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Connection",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panelConnection.setBounds(10, 11, 190, 130);
 		getContentPane().add(panelConnection);
 		panelConnection.setLayout(null);
@@ -149,8 +155,7 @@ public class PluginWindow extends JFrame {
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
-					camConnection = new CAMConnection(getHostName(), getPort());
-					camConnection.connect();
+					camConnection.connect(getHostName(), getPort());
 					if (camConnection.isConnected()) {
 						camConnection.sendCAMCommand("Hallo CAM");
 					}
@@ -182,7 +187,8 @@ public class PluginWindow extends JFrame {
 		btnDisconnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
 
 		panelImageView = new JPanel();
-		panelImageView.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Image View", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panelImageView.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Image View",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panelImageView.setBounds(210, 11, 1054, 679);
 		getContentPane().add(panelImageView);
 		panelImageView.setLayout(null);
@@ -218,12 +224,13 @@ public class PluginWindow extends JFrame {
 					File directory = chooser.getSelectedFile();
 					textFieldImagePath.setText(directory.getAbsolutePath());
 
-					// TODO: DEBUG
+					// TODO: DEBUG - Just dummy images
 					imageQueue = new LinkedBlockingQueue<File>();
 					File[] files = directory.listFiles();
 					for (File file : files) {
 						try {
-							if (file.getAbsolutePath().endsWith("tif") || file.getAbsolutePath().endsWith("png") || file.getAbsolutePath().endsWith("jpg"))
+							if (file.getAbsolutePath().endsWith("tif") || file.getAbsolutePath().endsWith("png")
+									|| file.getAbsolutePath().endsWith("jpg"))
 								imageQueue.put(file);
 						} catch (InterruptedException e1) {
 						}
@@ -259,7 +266,7 @@ public class PluginWindow extends JFrame {
 		JTextArea textAreaCamCommand = new JTextArea();
 		textAreaCamCommand.setLineWrap(true);
 		textAreaCamCommand.setFont(new Font("Consolas", Font.PLAIN, 11));
-		textAreaCamCommand.setBounds(10, 33, 170, 129);
+		textAreaCamCommand.setBounds(10, 33, 170, 65);
 		panelCAMCommand.add(textAreaCamCommand);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -279,7 +286,7 @@ public class PluginWindow extends JFrame {
 			}
 		});
 		btnSendCommand.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnSendCommand.setBounds(10, 173, 123, 23);
+		btnSendCommand.setBounds(10, 109, 170, 23);
 		panelCAMCommand.add(btnSendCommand);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -292,13 +299,13 @@ public class PluginWindow extends JFrame {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandStageInfo());
 					String returnedMessage = camConnection.receiveCAMCommand();
-					Hashtable<String,String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
+					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
 					setTextStagePosition(camCommand);
 				}
 			}
 		});
 		btnGetStagePosition.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnGetStagePosition.setBounds(10, 207, 123, 23);
+		btnGetStagePosition.setBounds(10, 143, 170, 23);
 		panelCAMCommand.add(btnGetStagePosition);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -314,71 +321,124 @@ public class PluginWindow extends JFrame {
 			}
 		});
 		btnGetScanStatus.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnGetScanStatus.setBounds(10, 241, 123, 23);
+		btnGetScanStatus.setBounds(10, 177, 170, 23);
 		panelCAMCommand.add(btnGetScanStatus);
-		
+
 		JLabel lblStagePosition = new JLabel("Stage Position");
-		lblStagePosition.setBounds(10, 275, 68, 14);
+		lblStagePosition.setBounds(10, 211, 68, 14);
 		panelCAMCommand.add(lblStagePosition);
-		
+
 		JLabel lblX = new JLabel("x:");
-		lblX.setBounds(10, 300, 10, 14);
+		lblX.setBounds(10, 236, 10, 14);
 		panelCAMCommand.add(lblX);
-		
+
 		JLabel lblY = new JLabel("y:");
-		lblY.setBounds(10, 325, 10, 14);
+		lblY.setBounds(10, 261, 10, 14);
 		panelCAMCommand.add(lblY);
-		
+
 		JLabel lblZ = new JLabel("z:");
-		lblZ.setBounds(10, 350, 10, 14);
+		lblZ.setBounds(10, 286, 10, 14);
 		panelCAMCommand.add(lblZ);
-		
-		lblXposition = new JLabel("xPosition");
-		lblXposition.setBounds(30, 300, 103, 14);
-		panelCAMCommand.add(lblXposition);
-		
-		lblYposition = new JLabel("yPosition");
-		lblYposition.setBounds(30, 325, 103, 14);
-		panelCAMCommand.add(lblYposition);
-		
-		lblZposition = new JLabel("zPosition");
-		lblZposition.setBounds(30, 350, 103, 14);
-		panelCAMCommand.add(lblZposition);
-		
+
+		textFieldXPos = new JTextField();
+		textFieldXPos.setText("test");
+		textFieldXPos.setBounds(30, 233, 114, 20);
+		panelCAMCommand.add(textFieldXPos);
+		textFieldXPos.setColumns(10);
+
+		textFieldYPos = new JTextField();
+		textFieldYPos.setText("test");
+		textFieldYPos.setBounds(30, 258, 114, 20);
+		panelCAMCommand.add(textFieldYPos);
+		textFieldYPos.setColumns(10);
+
+		textFieldZPos = new JTextField();
+		textFieldZPos.setText("test");
+		textFieldZPos.setBounds(30, 283, 114, 20);
+		panelCAMCommand.add(textFieldZPos);
+		textFieldZPos.setColumns(10);
+
+		lblUnitX = new JLabel("unit");
+		lblUnitX.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblUnitX.setBounds(154, 236, 26, 14);
+		panelCAMCommand.add(lblUnitX);
+
+		lblUnitY = new JLabel("unit");
+		lblUnitY.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblUnitY.setBounds(154, 261, 26, 14);
+		panelCAMCommand.add(lblUnitY);
+
+		lblUnitZ = new JLabel("unit");
+		lblUnitZ.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblUnitZ.setBounds(154, 286, 26, 14);
+		panelCAMCommand.add(lblUnitZ);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Set position"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnSetPosition = new JButton("Set position");
+		btnSetPosition.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				if (camConnection.isConnected()) {
+					try {
+						camConnection.sendCAMCommand(CAMCommandParser.createCommandMoveStage(
+								Double.parseDouble(textFieldXPos.getText()), Double.parseDouble(textFieldYPos.getText()),
+								CAMCommandParser.MOVE_ABSOLUTE, CAMCommandParser.UNIT_METER));
+					} catch (NumberFormatException e) {
+						logger.severe(e.getMessage());
+					} catch (Exception e) {
+						logger.severe(e.getMessage());
+					}
+					String returnedMessage = camConnection.receiveCAMCommand();
+					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
+					setTextStagePosition(camCommand);
+				}
+			}
+		});
+		btnSetPosition.setBounds(10, 311, 170, 23);
+		panelCAMCommand.add(btnSetPosition);
+
+		JLabel lblScanStatus = new JLabel("Scan status");
+		lblScanStatus.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblScanStatus.setBounds(124, 211, 56, 14);
+		panelCAMCommand.add(lblScanStatus);
+
 		JPanel panelScreeningSettings = new JPanel();
-		panelScreeningSettings.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelScreeningSettings.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
+				"Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		panelScreeningSettings.setBounds(10, 152, 190, 115);
 		getContentPane().add(panelScreeningSettings);
 		panelScreeningSettings.setLayout(null);
-		
+
 		JLabel lblResolution = new JLabel("Resolution");
 		lblResolution.setBounds(10, 26, 50, 14);
 		panelScreeningSettings.add(lblResolution);
-		
+
 		JComboBox<String> comboBoxResolution = new JComboBox<String>();
-		comboBoxResolution.setModel(new DefaultComboBoxModel(new String[] {"not yet implemented"}));
+		comboBoxResolution.setModel(new DefaultComboBoxModel(new String[] { "not yet implemented" }));
 		comboBoxResolution.setBounds(85, 24, 95, 20);
 		panelScreeningSettings.add(comboBoxResolution);
-		
+
 		JLabel lblImagesSec = new JLabel("Images / sec.");
 		lblImagesSec.setBounds(10, 58, 65, 14);
 		panelScreeningSettings.add(lblImagesSec);
-		
+
 		JComboBox<String> comboBoxImagesSec = new JComboBox<String>();
-		comboBoxImagesSec.setModel(new DefaultComboBoxModel<String>(new String[] {"not yet implemented"}));
+		comboBoxImagesSec.setModel(new DefaultComboBoxModel<String>(new String[] { "not yet implemented" }));
 		comboBoxImagesSec.setBounds(85, 54, 95, 20);
 		panelScreeningSettings.add(comboBoxImagesSec);
-		
+
 		JButton btnStartTracking = new JButton("Start Tracking");
 		btnStartTracking.setBounds(10, 83, 170, 23);
 		panelScreeningSettings.add(btnStartTracking);
-		
+
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-		
+
 		JMenu mnConnection = new JMenu("Connection");
 		menuBar.add(mnConnection);
-		
+
 		JMenuItem mntmSaveSettings = new JMenuItem("Save Settings...");
 		mntmSaveSettings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
@@ -387,7 +447,7 @@ public class PluginWindow extends JFrame {
 			}
 		});
 		mnConnection.add(mntmSaveSettings);
-		
+
 		JMenuItem mntmLoadSettings = new JMenuItem("Load Settings...");
 		mntmLoadSettings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -397,18 +457,20 @@ public class PluginWindow extends JFrame {
 		});
 		mnConnection.add(mntmLoadSettings);
 	}
-	
+
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Setter functions for GUI elements
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	
+
 	private void setTextStagePosition(Hashtable<String, String> camCommand) {
-		if (camCommand.get("app").equals("matrix") &&
-				camCommand.get("dev").equals("stage") &&
-				camCommand.get("info_for").equals(Leica_CAM_Tracking.PLUGIN_NAME)) {
-			lblXposition.setText(camCommand.get("xpos") + " " + camCommand.get("unit"));
-			lblYposition.setText(camCommand.get("ypos") + " " + camCommand.get("unit"));
-			lblZposition.setText(camCommand.get("zpos") + " " + camCommand.get("unit"));
+		if (camCommand.get("app").equals("matrix") && camCommand.get("dev").equals("stage")
+				&& camCommand.get("info_for").equals(Leica_CAM_Tracking.PLUGIN_NAME)) {
+			textFieldXPos.setText(camCommand.get("xpos"));
+			textFieldYPos.setText(camCommand.get("ypos"));
+			textFieldZPos.setText(camCommand.get("zpos"));
+			lblUnitX.setText(camCommand.get("unit"));
+			lblUnitY.setText(camCommand.get("unit"));
+			lblUnitZ.setText(camCommand.get("unit"));
 		}
 	}
 
@@ -445,18 +507,19 @@ public class PluginWindow extends JFrame {
 		public void run() {
 			try {
 				CellTracking cellTracking = new CellTracking();
-				
+
 				while (true) {
 					File file = imageQueue.take();
 					BufferedImage image = ImageIO.read(file);
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(image, 0, 0, null);
-					
-					// TODO: Cell tracking and stage movement calculation comes here!
+
+					// TODO: Cell tracking and stage movement calculation comes
+					// here!
 					cellTracking.track(image); // or something ^^
-					
+
 					// END _TODO
-					
+
 					Thread.sleep(2500); // DEBUG
 				}
 			} catch (InterruptedException | IOException e) {
