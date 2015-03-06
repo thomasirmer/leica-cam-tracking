@@ -60,14 +60,17 @@ public class CAMConnection {
 	 */
 	public synchronized void connect(InetAddress host, int port) {
 		try {
+			logger.info("Connecting to " + host + " at port " + port + "...");
+			logger.getHandlers()[0].flush();
+			
 			clientSocket = new Socket(host, port);
 			
 			createStreams();
 			createSendRecvThreads();
 
-			logger.info("Connection established to " + host.getHostAddress() + ":" + port);
+			logger.info("...done!");
 		} catch (IOException e) {
-			logger.severe("Connection failed: " + e.getMessage());
+			logger.severe("...failed! " + e.getMessage());
 		}
 	}
 

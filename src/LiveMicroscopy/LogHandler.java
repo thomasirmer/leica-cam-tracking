@@ -1,9 +1,13 @@
 package LiveMicroscopy;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 /**
  * This class presents the given log messages color formatted based on the log level in the given pane.
@@ -18,20 +22,30 @@ import javax.swing.SwingUtilities;
 public class LogHandler extends java.util.logging.Handler {
 
 	private JEditorPane textArea;
+	
+	private BlockingQueue<LogRecord> logQueue;
+	private LogWorker logDisplayer;
 
 	public LogHandler(JEditorPane textArea) {
 		this.textArea = textArea;
+		logQueue = new LinkedBlockingQueue<LogRecord>();
+		logDisplayer = new LogWorker();
+		logDisplayer.execute();
 	}
 
 	@Override
 	public void publish(LogRecord record) {
-		SwingUtilities.invokeLater(new Runnable() {
+		try {
+			logQueue.put(record);
+		} catch (InterruptedException e) {}
+	}
+	
+	private class LogWorker extends SwingWorker<Object, Object> {
+		@Override
+		protected Object doInBackground() throws Exception {
+			while (true) {
+				LogRecord record = logQueue.take();
 
-			@Override
-			public void run() {
-				// get current text in text field and split by </body> tag to append log message to the end
-				String[] oldLoggerText = textArea.getText().split("</body>");
-				
 				// change color based on log level
 				String fontColor = "#000000"; // black
 				if (record.getLevel() == Level.INFO)
@@ -40,17 +54,27 @@ public class LogHandler extends java.util.logging.Handler {
 					fontColor = "#FF9900"; // orange
 				else if (record.getLevel() == Level.SEVERE)
 					fontColor = "#990000"; // red
-				
+
 				// append log message to text field
 				String newLogMessage = "<font face=\"Ubuntu\" size=\"3\" color=\"" + fontColor + "\">" + "["
 						+ record.getLevel() + "] " + record.getMessage() + "</font><br>";
-				textArea.setText(oldLoggerText[0] + newLogMessage + "</body>" + oldLoggerText[1]);
+				publish(newLogMessage);
 			}
-		});
+		}
+		
+		@Override
+		protected void process(List<Object> chunks) {
+			for (Object newLogMessage : chunks) {
+				String[] oldLoggerText = textArea.getText().split("</body>");
+				textArea.setText(oldLoggerText[0] + (String)newLogMessage + "</body>" + oldLoggerText[1]);
+			}
+			
+		}
+		
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Unnecessary functions
+	// other functions
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
 	@Override
