@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -27,14 +28,12 @@ public class CAMConnection {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	// timeout for blocking receive functions
-	private static final int RECV_TIMEOUT_MS = 500;
+	private static final int RECV_TIMEOUT_MS = 100;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Connection fields
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private InetAddress host;
-	private int port;
 	private Socket clientSocket 		= null;
 	private PrintWriter outToCAM 		= null;
 	private BufferedReader inFromCAM 	= null;
@@ -58,12 +57,12 @@ public class CAMConnection {
 	/**
 	 * Connects to host and creates input- and output-streams.
 	 */
-	public synchronized void connect(InetAddress host, int port) {
+	public void connect(InetAddress host, int port) {
 		try {
 			logger.info("Connecting to " + host + " at port " + port + "...");
-			logger.getHandlers()[0].flush();
 			
 			clientSocket = new Socket(host, port);
+			clientSocket.setSoTimeout(RECV_TIMEOUT_MS);
 			
 			createStreams();
 			createSendRecvThreads();
@@ -97,7 +96,6 @@ public class CAMConnection {
 		outToCAM = new PrintWriter(outputStream);
 		
 		// input
-		clientSocket.setSoTimeout(RECV_TIMEOUT_MS);
 		InputStream inputStream = clientSocket.getInputStream();
 		inFromCAM = new BufferedReader(new InputStreamReader(inputStream));
 	}
@@ -108,7 +106,7 @@ public class CAMConnection {
 	 * socket. It will prompt windows to close and remove the JAVA based socket
 	 * from the socket server list.
 	 */
-	public synchronized void disconnect() {
+	public void disconnect() {
 		if (!(clientSocket == null)) {
 			try {
 				stopSendRecvThreads();
@@ -146,7 +144,7 @@ public class CAMConnection {
 		sender.join();
 	}
 
-	public synchronized boolean isConnected() {
+	public boolean isConnected() {
 		if (clientSocket != null)
 			if (clientSocket.isConnected())
 				return true;
@@ -160,9 +158,10 @@ public class CAMConnection {
 	 * @param command
 	 *            The CAM command
 	 */
-	public synchronized void sendCAMCommand(String command) {
+	public void sendCAMCommand(String command) {
 		try {
 			sendBuffer.put(command);
+			logger.info("Sent CAM command: " + command);
 		} catch (InterruptedException e) {
 			logger.warning("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
 		}
@@ -173,15 +172,16 @@ public class CAMConnection {
 	 * 
 	 * @return last received CAM command
 	 */
-	public synchronized String receiveCAMCommand() {
+	public String receiveCAMCommand() {
 		String camCommand = "";
 		try {
-			camCommand = receiveBuffer.take();
-		} catch (InterruptedException e) {
-			logger.warning("Interrupted while receiving command: " + "\n> Error: " + e.getMessage() + " <");
+			camCommand = receiveBuffer.poll(150, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {}
+		if (camCommand != null) {
+			logger.info("Received CAM command: " + camCommand);
+			return camCommand;
 		}
-
-		return camCommand;
+		return "";
 	}
 	
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -196,20 +196,20 @@ public class CAMConnection {
 
 		@Override
 		public void run() {
-			logger.info("Starting sender thread.");
+			Thread.currentThread().setName("CAM Send Thread");
+			logger.info("Starting " + Thread.currentThread().getName() + "...");
 
 			while (sendRecvThreadsShouldRun) {
 				try {
 					String command = sendBuffer.take();
 					outToCAM.println(command);
 					outToCAM.flush();
-					logger.info("Sent CAM command: " + command);
 					int delayTime = 50; // delay for CAM Commands --> necessary for multiple CAM Commands (due to CAM documentation)
 					Thread.sleep(delayTime);
 				} catch (InterruptedException e) {} // No need to handle this
 			}
 			
-			logger.info("SenderThread terminated.");
+			logger.info(Thread.currentThread().getName() + " terminated.");
 		}
 	}
 
@@ -225,7 +225,8 @@ public class CAMConnection {
 
 		@Override
 		public void run() {
-			logger.info("Starting receiver thread.");
+			Thread.currentThread().setName("CAM Receive Thread");
+			logger.info("Starting " + Thread.currentThread().getName() + "...");
 
 			while (sendRecvThreadsShouldRun) {
 				try {
@@ -233,13 +234,12 @@ public class CAMConnection {
 					command = inFromCAM.readLine(); // realized with timeout at construction of inputStream
 					if (!command.isEmpty()) {
 						receiveBuffer.put(command);
-						logger.info("Received CAM command: " + command);
 					}
 				} catch (IOException e) { // No log because IOException is just caused by readLine() timeout.
 				} catch (InterruptedException e) {} // No need to handle this
 			}
 			
-			logger.info("ReceiveThread terminated.");
+			logger.info(Thread.currentThread().getName() + " terminated.");
 		}
 	}
 }

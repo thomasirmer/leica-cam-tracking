@@ -1,4 +1,5 @@
 package LiveMicroscopy;
+import ij.IJ;
 import ij.plugin.PlugIn;
 
 import java.awt.Dimension;
@@ -39,6 +40,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 
 	@Override
 	public void run(String arg0) {
+		
 		try { // set look and feel to OS style
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
@@ -55,7 +57,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Helper functions
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
+	
 	/**
 	 * Gives the top left point for a GUI window of the given size based on the
 	 * screen resolution. This point can be used to place the GUI exactly in the

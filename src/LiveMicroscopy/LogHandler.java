@@ -6,7 +6,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 /**
@@ -34,7 +33,7 @@ public class LogHandler extends java.util.logging.Handler {
 	}
 
 	@Override
-	public void publish(LogRecord record) {
+	public synchronized void publish(LogRecord record) {
 		try {
 			logQueue.put(record);
 		} catch (InterruptedException e) {}
@@ -78,8 +77,8 @@ public class LogHandler extends java.util.logging.Handler {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
 	@Override
-	public void close() throws SecurityException {}
+	public synchronized void close() throws SecurityException {}
 	
 	@Override
-	public void flush() {}
+	public synchronized void flush() {}
 }

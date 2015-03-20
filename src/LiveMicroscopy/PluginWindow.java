@@ -9,7 +9,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
@@ -35,6 +40,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.SwingConstants;
+
+import com.sun.org.apache.xml.internal.serialize.XML11Serializer;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is
@@ -126,7 +133,6 @@ public class PluginWindow extends JFrame {
 		textFieldPort.setBounds(55, 54, 125, 28);
 		panelConnection.add(textFieldPort);
 		textFieldPort.setText("8895");
-		textFieldPort.setEditable(false);
 		textFieldPort.setColumns(5);
 
 		JScrollPane scrollPaneLogging = new JScrollPane();
@@ -157,7 +163,8 @@ public class PluginWindow extends JFrame {
 				try {
 					camConnection.connect(getHostName(), getPort());
 					if (camConnection.isConnected()) {
-						camConnection.sendCAMCommand("Hallo CAM");
+						setConnectionStatusGUI(true);
+						String returnedMessage = camConnection.receiveCAMCommand();
 					}
 				} catch (UnknownHostException e) {
 					logger.warning("Invalid host address format: " + e.getMessage());
@@ -179,6 +186,7 @@ public class PluginWindow extends JFrame {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection != null) {
 					camConnection.disconnect();
+					setConnectionStatusGUI(false);
 				}
 			}
 		});
@@ -278,10 +286,12 @@ public class PluginWindow extends JFrame {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
 					String camCommand = textAreaCamCommand.getText();
-					if (CAMCommandParser.isValidCAMCommand(camCommand))
+					if (CAMCommandParser.isValidCAMCommand(camCommand)) {
 						camConnection.sendCAMCommand(camCommand);
-					else
+						String returnedMessage = camConnection.receiveCAMCommand();
+					} else {
 						logger.severe("Wrong CAM Command structure.");
+					}
 				}
 			}
 		});
@@ -317,6 +327,7 @@ public class PluginWindow extends JFrame {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
 					camConnection.sendCAMCommand(CAMCommandParser.getCommandScanStatus());
+					String returnedMessage = camConnection.receiveCAMCommand();
 				}
 			}
 		});
@@ -416,7 +427,7 @@ public class PluginWindow extends JFrame {
 		panelScreeningSettings.add(lblResolution);
 
 		JComboBox<String> comboBoxResolution = new JComboBox<String>();
-		comboBoxResolution.setModel(new DefaultComboBoxModel(new String[] { "not yet implemented" }));
+		comboBoxResolution.setModel(new DefaultComboBoxModel<String>(new String[] { "not yet implemented" }));
 		comboBoxResolution.setBounds(85, 24, 95, 20);
 		panelScreeningSettings.add(comboBoxResolution);
 
@@ -432,30 +443,6 @@ public class PluginWindow extends JFrame {
 		JButton btnStartTracking = new JButton("Start Tracking");
 		btnStartTracking.setBounds(10, 83, 170, 23);
 		panelScreeningSettings.add(btnStartTracking);
-
-		JMenuBar menuBar = new JMenuBar();
-		setJMenuBar(menuBar);
-
-		JMenu mnConnection = new JMenu("Connection");
-		menuBar.add(mnConnection);
-
-		JMenuItem mntmSaveSettings = new JMenuItem("Save Settings...");
-		mntmSaveSettings.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				// TODO: Implement saving connection settings
-				IJ.showMessage("Not yet implemented");
-			}
-		});
-		mnConnection.add(mntmSaveSettings);
-
-		JMenuItem mntmLoadSettings = new JMenuItem("Load Settings...");
-		mntmLoadSettings.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// TODO: Implement loading connection settings
-				IJ.showMessage("Not yet implemented");
-			}
-		});
-		mnConnection.add(mntmLoadSettings);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -463,14 +450,31 @@ public class PluginWindow extends JFrame {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private void setTextStagePosition(Hashtable<String, String> camCommand) {
-		if (camCommand.get("app").equals("matrix") && camCommand.get("dev").equals("stage")
-				&& camCommand.get("info_for").equals(Leica_CAM_Tracking.PLUGIN_NAME)) {
-			textFieldXPos.setText(camCommand.get("xpos"));
-			textFieldYPos.setText(camCommand.get("ypos"));
-			textFieldZPos.setText(camCommand.get("zpos"));
-			lblUnitX.setText(camCommand.get("unit"));
-			lblUnitY.setText(camCommand.get("unit"));
-			lblUnitZ.setText(camCommand.get("unit"));
+		if (camCommand.containsKey("app") && camCommand.containsKey("dev") 
+				&& camCommand.containsKey("info_for")) {
+			if (camCommand.get("app").equals("matrix") && camCommand.get("dev").equals("stage")
+					&& camCommand.get("info_for").equals(Leica_CAM_Tracking.PLUGIN_NAME)) {
+				textFieldXPos.setText(camCommand.get("xpos"));
+				textFieldYPos.setText(camCommand.get("ypos"));
+				textFieldZPos.setText(camCommand.get("zpos"));
+				lblUnitX.setText(camCommand.get("unit"));
+				lblUnitY.setText(camCommand.get("unit"));
+				lblUnitZ.setText(camCommand.get("unit"));
+			}
+		}
+	}
+	
+	private void setConnectionStatusGUI(boolean connected) {
+		if (connected) {
+			textFieldHostAddress.setEnabled(false);
+			textFieldHostAddress.setBackground(new Color(102, 255, 000));
+			textFieldPort.setEnabled(false);
+			textFieldPort.setBackground(new Color(102, 255, 000));
+		} else {
+			textFieldHostAddress.setEnabled(true);
+			textFieldHostAddress.setBackground(Color.WHITE);
+			textFieldPort.setEnabled(true);
+			textFieldPort.setBackground(Color.WHITE);
 		}
 	}
 
@@ -505,6 +509,8 @@ public class PluginWindow extends JFrame {
 
 		@Override
 		public void run() {
+			Thread.currentThread().setName("Image Loader Thread");
+			
 			try {
 				CellTracking cellTracking = new CellTracking();
 
@@ -514,9 +520,8 @@ public class PluginWindow extends JFrame {
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(image, 0, 0, null);
 
-					// TODO: Cell tracking and stage movement calculation comes
-					// here!
-					cellTracking.track(image); // or something ^^
+					// TODO: Cell tracking and stage movement calculation comes here!
+					cellTracking.track(image); // it's something ^^
 
 					// END _TODO
 
