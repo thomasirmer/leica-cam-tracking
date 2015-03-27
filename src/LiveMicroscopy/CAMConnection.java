@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 /**
  * This is a communication class with the CAM communication interface.
- * It manages the connection itself like establishing the connection and disconnecting properly.
+ * It manages the connection itself - establishing the connection and disconnecting properly.
  * It also holds the methods to send and receive commands to / from CAM interface.
  * Send and receive are realized concurrent in daemon-threads.
  * 
@@ -152,6 +152,10 @@ public class CAMConnection {
 
 	}
 
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// CAM Commands
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	/**
 	 * Inserts the given command to the send buffer.
 	 * 
@@ -165,6 +169,57 @@ public class CAMConnection {
 		} catch (InterruptedException e) {
 			logger.warning("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
 		}
+	}
+	
+	public static final int MOVE_ABSOLUTE = 0;
+	public static final int MOVE_RELATIVE = 1;
+	public static final int UNIT_METER = 0;
+	public static final int UNIT_MICRONS = 1;
+	
+	/**
+	 * 
+	 * @param xPos
+	 *            the new x-Position for the stage
+	 * @param yPos
+	 *            the new y-Position for the stage
+	 * @param moveType
+	 *            either absolute or relative (use the constants in this class:
+	 *            MOVE_ABSOLUTE, MOVE_RELATIVE)
+	 * @param unit
+	 *            either meter or microns (use the constants in this class:
+	 *            UNIT_METER, UNIT_MICRONS)
+	 * @return
+	 * @throws Exception
+	 */
+	public void moveStage(double xPos, double yPos, int type, int unit) throws Exception {
+		String typeS;
+		if (type == MOVE_ABSOLUTE)
+			typeS = "absolute";
+		else if (type == MOVE_RELATIVE)
+			typeS = "relative";
+		else
+			throw new Exception("Wrong movement type. Possible values: MOVE_ABSOLUTE, MOVE_RELATIVE");
+
+		String unitS;
+		if (unit == UNIT_METER)
+			unitS = "meter";
+		else if (unit == UNIT_MICRONS)
+			unitS = "microns";
+		else
+			throw new Exception("Wrong unit type. Possible values: UNIT_METER, UNIT_MICRONS");
+
+		sendCAMCommand("/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /sys:1 /cmd:setposition /typ:" + typeS
+				+ " /dev:stage /unit:" + unitS + " /xpos:" + xPos + " /ypos:" + yPos);
+	}
+	
+	public String getStageInfo() {
+		sendCAMCommand("/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /cmd:getinfo /dev:stage");
+		return receiveCAMCommand();
+	}
+
+	public String getScanStatus() {
+		sendCAMCommand("/cli:" + Leica_CAM_Tracking.PLUGIN_NAME + " /app:matrix /cmd:getinfo /dev:scanstatus");
+		return receiveCAMCommand();
 	}
 
 	/**
@@ -234,6 +289,7 @@ public class CAMConnection {
 					command = inFromCAM.readLine(); // realized with timeout at construction of inputStream
 					if (!command.isEmpty()) {
 						receiveBuffer.put(command);
+						logger.info("Received CAM command --> inserted into receive buffer.");
 					}
 				} catch (IOException e) { // No log because IOException is just caused by readLine() timeout.
 				} catch (InterruptedException e) {} // No need to handle this

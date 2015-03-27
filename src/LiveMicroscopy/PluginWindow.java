@@ -1,6 +1,6 @@
 package LiveMicroscopy;
 
-import ij.IJ;
+import ij.ImagePlus;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -9,12 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
@@ -22,7 +16,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -30,18 +23,13 @@ import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.SwingConstants;
-
-import com.sun.org.apache.xml.internal.serialize.XML11Serializer;
 
 /**
  * Represents the GUI and the button actions of the ImageJ-plugin. This class is
@@ -99,7 +87,7 @@ public class PluginWindow extends JFrame {
 	private PluginWindow() {
 		getContentPane().setFont(new Font("Tahoma", Font.PLAIN, 11));
 		setFont(new Font("Tahoma", Font.PLAIN, 12));
-		setIconImage(Toolkit.getDefaultToolkit().getImage(PluginWindow.class.getResource("/icon/microscope_3.ico")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(PluginWindow.class.getResource("/icon/microscope_2.ico")));
 		setResizable(false);
 		setTitle("Leica CAM Tracking");
 		getContentPane().setLayout(null);
@@ -237,8 +225,10 @@ public class PluginWindow extends JFrame {
 					File[] files = directory.listFiles();
 					for (File file : files) {
 						try {
-							if (file.getAbsolutePath().endsWith("tif") || file.getAbsolutePath().endsWith("png")
-									|| file.getAbsolutePath().endsWith("jpg"))
+							if (file.getAbsolutePath().endsWith("tif") 
+									|| file.getAbsolutePath().endsWith("png")
+									|| file.getAbsolutePath().endsWith("jpg") 
+									|| file.getAbsolutePath().endsWith("tiff"))
 								imageQueue.put(file);
 						} catch (InterruptedException e1) {
 						}
@@ -307,8 +297,7 @@ public class PluginWindow extends JFrame {
 		btnGetStagePosition.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
-					camConnection.sendCAMCommand(CAMCommandParser.getCommandStageInfo());
-					String returnedMessage = camConnection.receiveCAMCommand();
+					String returnedMessage = camConnection.getStageInfo();
 					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
 					setTextStagePosition(camCommand);
 				}
@@ -326,8 +315,7 @@ public class PluginWindow extends JFrame {
 		btnGetScanStatus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
-					camConnection.sendCAMCommand(CAMCommandParser.getCommandScanStatus());
-					String returnedMessage = camConnection.receiveCAMCommand();
+					String returnedMessage = camConnection.getScanStatus();
 				}
 			}
 		});
@@ -393,9 +381,9 @@ public class PluginWindow extends JFrame {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection.isConnected()) {
 					try {
-						camConnection.sendCAMCommand(CAMCommandParser.createCommandMoveStage(
-								Double.parseDouble(textFieldXPos.getText()), Double.parseDouble(textFieldYPos.getText()),
-								CAMCommandParser.MOVE_ABSOLUTE, CAMCommandParser.UNIT_METER));
+						camConnection.moveStage(Double.parseDouble(textFieldXPos.getText()),
+								Double.parseDouble(textFieldYPos.getText()), CAMConnection.MOVE_ABSOLUTE,
+								CAMConnection.UNIT_METER);
 					} catch (NumberFormatException e) {
 						logger.severe(e.getMessage());
 					} catch (Exception e) {
@@ -416,6 +404,7 @@ public class PluginWindow extends JFrame {
 		panelCAMCommand.add(lblScanStatus);
 
 		JPanel panelScreeningSettings = new JPanel();
+		panelScreeningSettings.setBackground(new Color(255, 204, 153));
 		panelScreeningSettings.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
 				"Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		panelScreeningSettings.setBounds(10, 152, 190, 115);
@@ -450,8 +439,7 @@ public class PluginWindow extends JFrame {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private void setTextStagePosition(Hashtable<String, String> camCommand) {
-		if (camCommand.containsKey("app") && camCommand.containsKey("dev") 
-				&& camCommand.containsKey("info_for")) {
+		if (camCommand.containsKey("app") && camCommand.containsKey("dev") && camCommand.containsKey("info_for")) {
 			if (camCommand.get("app").equals("matrix") && camCommand.get("dev").equals("stage")
 					&& camCommand.get("info_for").equals(Leica_CAM_Tracking.PLUGIN_NAME)) {
 				textFieldXPos.setText(camCommand.get("xpos"));
@@ -463,7 +451,7 @@ public class PluginWindow extends JFrame {
 			}
 		}
 	}
-	
+
 	private void setConnectionStatusGUI(boolean connected) {
 		if (connected) {
 			textFieldHostAddress.setEnabled(false);
@@ -510,24 +498,25 @@ public class PluginWindow extends JFrame {
 		@Override
 		public void run() {
 			Thread.currentThread().setName("Image Loader Thread");
-			
+
 			try {
 				CellTracking cellTracking = new CellTracking();
 
 				while (true) {
 					File file = imageQueue.take();
-					BufferedImage image = ImageIO.read(file);
+					ImagePlus image = new ImagePlus(file.getAbsolutePath());
+					BufferedImage bufferdImage = image.getBufferedImage();
 					panelImageView.paintComponents(panelImageView.getGraphics());
-					panelImageView.getGraphics().drawImage(image, 0, 0, null);
+					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
 
-					// TODO: Cell tracking and stage movement calculation comes here!
+					// TODO: Cell tracking and stage movement calculation comes
+					// here!
 					cellTracking.track(image); // it's something ^^
-
 					// END _TODO
 
 					Thread.sleep(2500); // DEBUG
 				}
-			} catch (InterruptedException | IOException e) {
+			} catch (InterruptedException e) {
 			}
 		}
 
