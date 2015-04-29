@@ -430,6 +430,10 @@ public class PluginWindow extends JFrame {
 		panelScreeningSettings.add(comboBoxImagesSec);
 
 		JButton btnStartTracking = new JButton("Start Tracking");
+		btnStartTracking.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 		btnStartTracking.setBounds(10, 83, 170, 23);
 		panelScreeningSettings.add(btnStartTracking);
 	}
@@ -513,6 +517,8 @@ public class PluginWindow extends JFrame {
 					// here!
 					cellTracking.track(image); // it's something ^^
 					// END _TODO
+					bufferdImage = image.getBufferedImage();					
+					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
 
 					Thread.sleep(2500); // DEBUG
 				}
