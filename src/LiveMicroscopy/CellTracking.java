@@ -25,13 +25,8 @@ public class CellTracking implements Measurements {
 	public void track(ImagePlus image) {		
 		ResultsTable rt = new ResultsTable();
 		rt.reset();
-<<<<<<< HEAD
-		ParticleAnalyzer pa = new ParticleAnalyzer(0, CENTROID, rt, 1500, 15000);
-		pa.analyze(image);
-=======
 		//ParticleAnalyzer pa = new ParticleAnalyzer(0, CENTROID, rt, 500, 10000);
 		//pa.analyze(image);
->>>>>>> 68758d93dab6a98aa8000344a79b30db16a05897
 		
 		float[] xRes = rt.getColumn(ResultsTable.X_CENTROID);
 		float[] yRes = rt.getColumn(ResultsTable.Y_CENTROID);
@@ -47,20 +42,7 @@ public class CellTracking implements Measurements {
 		EDM watershedPlugin = new EDM();
 		watershedPlugin.toWatershed(bp);
 		
-<<<<<<< HEAD
-		if (xRes == null || yRes == null)
-			return;
-		
-		for (int i = 0; i < xRes.length; i++) {
-			Point particle = new Point((int) xRes[i], (int) yRes[i]); 
-			markedCellsGraphics.fillRect(particle.x - 10, particle.y - 10, 20, 20);
-		}
-=======
 		//To Do: Cell tracking with CellProfiler
->>>>>>> 68758d93dab6a98aa8000344a79b30db16a05897
-		
-		
-		
 		
 //		for (int i = 0; i < xRes.length; i++) {
 //			Point particle = new Point((int) xRes[i], (int) yRes[i]); 
