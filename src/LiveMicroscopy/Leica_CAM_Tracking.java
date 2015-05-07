@@ -33,25 +33,25 @@ public class Leica_CAM_Tracking implements PlugIn {
 	// GUI
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static final int GUI_WIDTH = 1280;
-	private static final int GUI_HEIGHT = 960;
+	private static final int GUI_WIDTH_PLUGIN_WINDOW  = 900;
+	private static final int GUI_HEIGHT_PLUGIN_WINDOW = 935;
 
-	PluginWindow gui = null;
+	PluginWindow guiPluginWindow = null;
 
 	@Override
 	public void run(String arg0) {
-		
+		//Hallo
 		try { // set look and feel to OS style
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
 			// doesn't matter if this goes wrong
 		}
 		
-		// Create GUI and show
-		gui = PluginWindow.getInstance();
-		gui.setSize(GUI_WIDTH, GUI_HEIGHT);
-		gui.setLocation(getGuiOrigin(GUI_WIDTH, GUI_HEIGHT));
-		gui.setVisible(true);
+		// Create GUI <<PluginWindow>> and show
+		guiPluginWindow = PluginWindow.getInstance();
+		guiPluginWindow.setSize(GUI_WIDTH_PLUGIN_WINDOW, GUI_HEIGHT_PLUGIN_WINDOW);
+		guiPluginWindow.setLocation(getGuiOriginForCenter(GUI_WIDTH_PLUGIN_WINDOW, GUI_HEIGHT_PLUGIN_WINDOW));
+		guiPluginWindow.setVisible(true);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -67,7 +67,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	 * @param guiHeigth
 	 * @return top left corner point for GUI
 	 */
-	private Point getGuiOrigin(int guiWidth, int guiHeigth) {
+	private Point getGuiOriginForCenter(int guiWidth, int guiHeigth) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int screenWidth = screenSize.width;
 		int screenHeight = screenSize.height;

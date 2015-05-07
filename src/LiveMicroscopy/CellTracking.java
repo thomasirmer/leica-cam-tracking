@@ -17,10 +17,10 @@ import java.awt.image.BufferedImage;
  */
 public class CellTracking implements Measurements {
 
-	public void track(ImagePlus image) {
+	public void track(ImagePlus image) {		
 		ResultsTable rt = new ResultsTable();
 		rt.reset();
-		ParticleAnalyzer pa = new ParticleAnalyzer(0, CENTROID, rt, 500, 10000);
+		ParticleAnalyzer pa = new ParticleAnalyzer(0, CENTROID, rt, 1500, 15000);
 		pa.analyze(image);
 		
 		float[] xRes = rt.getColumn(ResultsTable.X_CENTROID);
@@ -28,6 +28,9 @@ public class CellTracking implements Measurements {
 		
 		BufferedImage markedCellsImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics markedCellsGraphics = markedCellsImage.getGraphics();
+		
+		if (xRes == null || yRes == null)
+			return;
 		
 		for (int i = 0; i < xRes.length; i++) {
 			Point particle = new Point((int) xRes[i], (int) yRes[i]); 

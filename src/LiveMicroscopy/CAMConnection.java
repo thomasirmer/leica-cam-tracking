@@ -1,5 +1,6 @@
 package LiveMicroscopy;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,6 +54,11 @@ public class CAMConnection {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private static final Logger logger = Logger.getGlobal();
+	private BlockingQueue<File> imageQueue;
+
+	public CAMConnection(BlockingQueue<File> imageQueue) {
+		this.imageQueue = imageQueue;
+	}
 
 	/**
 	 * Connects to host and creates input- and output-streams.
@@ -165,7 +171,7 @@ public class CAMConnection {
 	public void sendCAMCommand(String command) {
 		try {
 			sendBuffer.put(command);
-			logger.info("Sent CAM command: " + command);
+			logger.info("Plugin >>> " + command);
 		} catch (InterruptedException e) {
 			logger.warning("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
 		}
@@ -233,7 +239,6 @@ public class CAMConnection {
 			camCommand = receiveBuffer.poll(150, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {}
 		if (camCommand != null) {
-			logger.info("Received CAM command: " + camCommand);
 			return camCommand;
 		}
 		return "";
@@ -289,7 +294,15 @@ public class CAMConnection {
 					command = inFromCAM.readLine(); // realized with timeout at construction of inputStream
 					if (!command.isEmpty()) {
 						receiveBuffer.put(command);
-						logger.info("Received CAM command --> inserted into receive buffer.");
+						logger.info("LAS X >>> " + command);
+						
+						String pathKey = "/alternativepath:";
+						if (command.contains(pathKey)) { // received an image from LAS X
+							int idxPath = pathKey.length() - command.indexOf(pathKey);
+							String imagePath = command.substring(idxPath).replace("\\", "/");
+							File imageFile = new File(imagePath);
+							imageQueue.put(imageFile);
+						}
 					}
 				} catch (IOException e) { // No log because IOException is just caused by readLine() timeout.
 				} catch (InterruptedException e) {} // No need to handle this

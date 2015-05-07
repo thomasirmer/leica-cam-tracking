@@ -1,8 +1,13 @@
 package LiveMicroscopy;
 
 import ij.ImagePlus;
+import ij.gui.ImageWindow;
+import ij.gui.NewImage;
+import ij.gui.Roi;
+import ij.process.ColorProcessor;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -66,19 +71,23 @@ public class PluginWindow extends JFrame {
 	private JTextField textFieldPort;
 
 	private JPanel panelImageView;
-	private BlockingQueue<File> imageQueue;
+	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
 
-	private CAMConnection camConnection = new CAMConnection();
+	private CAMConnection camConnection = new CAMConnection(imageQueue);
 	private Logger logger = Logger.getGlobal();
 	private LogHandler logHandler;
 	private JTextField textFieldImagePath;
 	private JTextField textFieldXPos;
 	private JTextField textFieldYPos;
 	private JTextField textFieldZPos;
+	
+	private JTextArea textAreaPipeline;
 
 	private JLabel lblUnitX;
 	private JLabel lblUnitY;
 	private JLabel lblUnitZ;
+
+	private ImageWindow imageWindow;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// GUI and action listener
@@ -124,7 +133,7 @@ public class PluginWindow extends JFrame {
 		textFieldPort.setColumns(5);
 
 		JScrollPane scrollPaneLogging = new JScrollPane();
-		scrollPaneLogging.setBounds(210, 701, 1054, 199);
+		scrollPaneLogging.setBounds(210, 701, 674, 199);
 		getContentPane().add(scrollPaneLogging);
 
 		JEditorPane textAreaLogging = new JEditorPane();
@@ -185,7 +194,7 @@ public class PluginWindow extends JFrame {
 		panelImageView = new JPanel();
 		panelImageView.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Image View",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panelImageView.setBounds(210, 11, 1054, 679);
+		panelImageView.setBounds(210, 11, 674, 364);
 		getContentPane().add(panelImageView);
 		panelImageView.setLayout(null);
 
@@ -212,32 +221,26 @@ public class PluginWindow extends JFrame {
 		buttonSelectPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				JFileChooser chooser = new JFileChooser();
-				chooser.setDialogTitle("Choose the path where the microscope will save its images...");
-				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				chooser.setDialogTitle("Choose an image...");
+				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
 				int returnValue = chooser.showDialog(PluginWindow.instance, "Select");
 
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					File directory = chooser.getSelectedFile();
-					textFieldImagePath.setText(directory.getAbsolutePath());
+					File imageFile = chooser.getSelectedFile();
+					textFieldImagePath.setText(imageFile.getAbsolutePath());
 
-					// TODO: DEBUG - Just dummy images
-					imageQueue = new LinkedBlockingQueue<File>();
-					File[] files = directory.listFiles();
-					for (File file : files) {
-						try {
-							if (file.getAbsolutePath().endsWith("tif") 
-									|| file.getAbsolutePath().endsWith("png")
-									|| file.getAbsolutePath().endsWith("jpg") 
-									|| file.getAbsolutePath().endsWith("tiff"))
-								imageQueue.put(file);
-						} catch (InterruptedException e1) {
-						}
+					if (imageQueue == null)
+						imageQueue = new LinkedBlockingQueue<File>();
+					try {
+						imageQueue.put(imageFile);
+					} catch (InterruptedException e) {
+						logger.warning(e.getMessage());
 					}
 
 					Thread imagePresenter = new Thread(new ImageLoaderThread());
 					imagePresenter.setDaemon(true);
 					imagePresenter.start();
-					// END: DEBUG
 				}
 			}
 		});
@@ -403,6 +406,30 @@ public class PluginWindow extends JFrame {
 		lblScanStatus.setBounds(124, 211, 56, 14);
 		panelCAMCommand.add(lblScanStatus);
 
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Execute Pipeline"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnExecutePipeline = new JButton("Execute Pipeline");
+		btnExecutePipeline.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String camCommands = textAreaPipeline.getText();
+				String[] splittedCamCommands = camCommands.split("\n");
+				
+				for (String command : splittedCamCommands) {
+					if (!command.isEmpty() && !command.startsWith("#")) {
+						if (CAMCommandParser.isValidCAMCommand(command)) {
+							camConnection.sendCAMCommand(command);
+						} else {
+							logger.warning("Invalid CAM Command");
+						}
+					}
+				}
+			}
+		});
+		btnExecutePipeline.setBounds(10, 345, 170, 23);
+		panelCAMCommand.add(btnExecutePipeline);
+
 		JPanel panelScreeningSettings = new JPanel();
 		panelScreeningSettings.setBackground(new Color(255, 204, 153));
 		panelScreeningSettings.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
@@ -429,9 +456,41 @@ public class PluginWindow extends JFrame {
 		comboBoxImagesSec.setBounds(85, 54, 95, 20);
 		panelScreeningSettings.add(comboBoxImagesSec);
 
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Start Tracking"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 		JButton btnStartTracking = new JButton("Start Tracking");
+		btnStartTracking.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ImagePlus image = imageWindow.getImagePlus();
+				Roi roi = image.getRoi();
+
+				ImagePlus slice = NewImage.createRGBImage("Roi", (int) Math.round(roi.getFloatWidth()),
+						(int) Math.round(roi.getFloatHeight()), image.getSlice(), 0);
+
+				slice.setProcessor(new ColorProcessor(roi.getBounds().width, roi.getBounds().height));
+
+				slice.getProcessor().insert(image.getProcessor(), -roi.getBounds().x, -roi.getBounds().y);
+
+				BufferedImage bufferedImage = slice.getBufferedImage();
+
+				panelImageView.paintComponents(panelImageView.getGraphics());
+				panelImageView.getGraphics().drawImage(bufferedImage, 0, 0, null);
+			}
+		});
 		btnStartTracking.setBounds(10, 83, 170, 23);
 		panelScreeningSettings.add(btnStartTracking);
+
+		JScrollPane scrollPanePipeline = new JScrollPane();
+		scrollPanePipeline.setBounds(210, 386, 674, 304);
+		getContentPane().add(scrollPanePipeline);
+
+		textAreaPipeline = new JTextArea();
+		scrollPanePipeline.setViewportView(textAreaPipeline);
+
+		JLabel lblCamCommandPipeline = new JLabel("CAM Command Pipeline");
+		scrollPanePipeline.setColumnHeaderView(lblCamCommandPipeline);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -505,16 +564,26 @@ public class PluginWindow extends JFrame {
 				while (true) {
 					File file = imageQueue.take();
 					ImagePlus image = new ImagePlus(file.getAbsolutePath());
-					BufferedImage bufferdImage = image.getBufferedImage();
-					panelImageView.paintComponents(panelImageView.getGraphics());
-					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
+					ImageWindow window = new ImageWindow(image);
+
+					Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+					int screenWidth = screenSize.width;
+					int screenHeight = screenSize.height;
+
+					window.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
+					window.getCanvas().fitToWindow();
+
+					imageWindow = window;
+
+					// BufferedImage bufferdImage = image.getBufferedImage();
+					// panelImageView.paintComponents(panelImageView.getGraphics());
+					// panelImageView.getGraphics().drawImage(bufferdImage, 0,
+					// 0, null);
 
 					// TODO: Cell tracking and stage movement calculation comes
 					// here!
-					cellTracking.track(image); // it's something ^^
+					// cellTracking.track(image); // it's something ^^
 					// END _TODO
-
-					Thread.sleep(2500); // DEBUG
 				}
 			} catch (InterruptedException e) {
 			}
