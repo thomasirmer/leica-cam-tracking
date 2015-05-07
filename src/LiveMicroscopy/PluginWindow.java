@@ -162,6 +162,7 @@ public class PluginWindow extends JFrame {
 					if (camConnection.isConnected()) {
 						setConnectionStatusGUI(true);
 						String returnedMessage = camConnection.receiveCAMCommand();
+						createImagingThread();
 					}
 				} catch (UnknownHostException e) {
 					logger.warning("Invalid host address format: " + e.getMessage());
@@ -545,6 +546,12 @@ public class PluginWindow extends JFrame {
 	// Image-Presenter-Thread
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+	private void createImagingThread() {
+		Thread imagePresenter = new Thread(new ImageLoaderThread());
+		imagePresenter.setDaemon(true);
+		imagePresenter.start();
+	}
+	
 	private class ImageLoaderThread implements Runnable {
 
 		// TODO: Dieser Thread soll an einer BlockingQueue darauf warten, dass
@@ -573,7 +580,7 @@ public class PluginWindow extends JFrame {
 					window.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
 					window.getCanvas().fitToWindow();
 
-					imageWindow = window;
+					window.setVisible(true);
 
 					// BufferedImage bufferdImage = image.getBufferedImage();
 					// panelImageView.paintComponents(panelImageView.getGraphics());
