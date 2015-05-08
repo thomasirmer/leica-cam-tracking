@@ -160,7 +160,7 @@ public class PluginWindow extends JFrame {
 				try {
 					camConnection.connect(getHostName(), getPort());
 					if (camConnection.isConnected()) {
-						setConnectionStatusGUI(true);
+						indicateEstablishedConnection(true);
 						String returnedMessage = camConnection.receiveCAMCommand();
 						createImagingThread();
 					}
@@ -184,7 +184,7 @@ public class PluginWindow extends JFrame {
 			public void actionPerformed(ActionEvent event) {
 				if (camConnection != null) {
 					camConnection.disconnect();
-					setConnectionStatusGUI(false);
+					indicateEstablishedConnection(false);
 				}
 			}
 		});
@@ -430,6 +430,15 @@ public class PluginWindow extends JFrame {
 		});
 		btnExecutePipeline.setBounds(10, 345, 170, 23);
 		panelCAMCommand.add(btnExecutePipeline);
+		
+		JButton btnClearLog = new JButton("Clear Log");
+		btnClearLog.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textAreaLogging.setText("");
+			}
+		});
+		btnClearLog.setBounds(91, 480, 89, 23);
+		panelCAMCommand.add(btnClearLog);
 
 		JPanel panelScreeningSettings = new JPanel();
 		panelScreeningSettings.setBackground(new Color(255, 204, 153));
@@ -512,7 +521,7 @@ public class PluginWindow extends JFrame {
 		}
 	}
 
-	private void setConnectionStatusGUI(boolean connected) {
+	private void indicateEstablishedConnection(boolean connected) {
 		if (connected) {
 			textFieldHostAddress.setEnabled(false);
 			textFieldHostAddress.setBackground(new Color(102, 255, 000));
@@ -566,31 +575,33 @@ public class PluginWindow extends JFrame {
 			Thread.currentThread().setName("Image Loader Thread");
 
 			try {
-				CellTracking cellTracking = new CellTracking();
+				//CellTracking cellTracking = new CellTracking();
 
-				while (true) {
-					File file = imageQueue.take();
-					ImagePlus image = new ImagePlus(file.getAbsolutePath());
-					ImageWindow window = new ImageWindow(image);
-
-					Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-					int screenWidth = screenSize.width;
-					int screenHeight = screenSize.height;
-
-					window.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
-					window.getCanvas().fitToWindow();
-
-					window.setVisible(true);
-
-					// BufferedImage bufferdImage = image.getBufferedImage();
-					// panelImageView.paintComponents(panelImageView.getGraphics());
-					// panelImageView.getGraphics().drawImage(bufferdImage, 0,
-					// 0, null);
-
-					// TODO: Cell tracking and stage movement calculation comes
-					// here!
-					// cellTracking.track(image); // it's something ^^
-					// END _TODO
+				File 		imageFile			= null;
+				ImagePlus 	imageFromMicroscope = null;
+				ImageWindow imageWindow			= null;
+				
+				boolean firstRunWindowSetup 	= true;
+								
+				while (true) {				
+					imageFile 			= imageQueue.take();					
+					imageFromMicroscope = new ImagePlus(imageFile.getAbsolutePath());
+					
+					if (firstRunWindowSetup) {
+						Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+						int screenWidth = screenSize.width;
+						int screenHeight = screenSize.height;
+						
+						imageWindow = new ImageWindow(imageFromMicroscope);
+						imageWindow.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
+						imageWindow.getCanvas().fitToWindow();
+						
+						firstRunWindowSetup = false;
+					} else {
+						imageWindow.setImage(imageFromMicroscope);
+					}		
+					
+					imageWindow.setVisible(true);
 				}
 			} catch (InterruptedException e) {
 			}
