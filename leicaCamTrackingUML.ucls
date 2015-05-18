@@ -1,170 +1,230 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.8" icons="true" automaticImage="PNG" always-add-relationships="true" generalizations="true" 
   realizations="true" associations="true" dependencies="false" nesting-relationships="true">  
-  <class id="1" language="java" name="LiveMicroscopy.Leica_CAM_Tracking" project="leicaCamTracking" 
-    file="/leicaCamTracking/src/LiveMicroscopy/Leica_CAM_Tracking.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="171" width="194" x="572" y="37"/>    
+  <class id="1" language="java" name="LiveMicroscopy.LogHandler" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/LogHandler.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="171" width="215" x="235" y="757"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="2" language="java" name="LiveMicroscopy.CAMConnection.SenderThread" project="leicaCamTracking" 
-    file="/leicaCamTracking/src/LiveMicroscopy/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="105" x="497" y="1346"/>    
+  <class id="2" language="java" name="LiveMicroscopy.CAMControlWindow.ImageLoaderThread" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/CAMControlWindow.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="99" width="139" x="786" y="757"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="3" language="java" name="LiveMicroscopy.CellTracking" project="leicaCamTracking" 
-    file="/leicaCamTracking/src/LiveMicroscopy/CellTracking.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="129" x="42" y="37"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="4" language="java" name="LiveMicroscopy.CAMConnection" project="leicaCamTracking" 
-    file="/leicaCamTracking/src/LiveMicroscopy/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="549" width="211" x="555" y="757"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="5" language="java" name="LiveMicroscopy.PluginWindow" project="leicaCamTracking" 
+  <class id="3" language="java" name="LiveMicroscopy.PluginWindow" project="leicaCamTracking" 
     file="/leicaCamTracking/src/LiveMicroscopy/PluginWindow.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="459" width="276" x="387" y="248"/>    
+    <position height="423" width="276" x="392" y="284"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="LiveMicroscopy.PluginWindow.ImageLoaderThread" project="leicaCamTracking" 
-    file="/leicaCamTracking/src/LiveMicroscopy/PluginWindow.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="139" x="121" y="757"/>    
+  <interface id="4" language="java" name="LiveMicroscopy.ICAMObserver" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/ICAMObserver.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="81" width="194" x="828" y="1410"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
-  </class>  
-  <class id="7" language="java" name="LiveMicroscopy.CAMConnection.ReceiveThread" project="leicaCamTracking" 
+  </interface>  
+  <class id="5" language="java" name="LiveMicroscopy.CAMConnection.ReceiveThread" project="leicaCamTracking" 
     file="/leicaCamTracking/src/LiveMicroscopy/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="109" x="642" y="1346"/>    
+    <position height="99" width="109" x="577" y="1410"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="LiveMicroscopy.CAMCommandParser" project="leicaCamTracking" 
+  <class id="6" language="java" name="LiveMicroscopy.CAMCommandParser" project="leicaCamTracking" 
     file="/leicaCamTracking/src/LiveMicroscopy/CAMCommandParser.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="117" width="321" x="211" y="37"/>    
+    <position height="117" width="321" x="210" y="37"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="9" language="java" name="LiveMicroscopy.LogHandler" project="leicaCamTracking" 
+  <class id="7" language="java" name="LiveMicroscopy.LogHandler.LogWorker" project="leicaCamTracking" 
     file="/leicaCamTracking/src/LiveMicroscopy/LogHandler.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="171" width="215" x="300" y="757"/>    
+    <position height="117" width="157" x="235" y="1410"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="10" language="java" name="LiveMicroscopy.LogHandler.LogWorker" project="leicaCamTracking" 
-    file="/leicaCamTracking/src/LiveMicroscopy/LogHandler.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="117" width="157" x="300" y="1346"/>    
+  <class id="8" language="java" name="LiveMicroscopy.Leica_CAM_Tracking" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/Leica_CAM_Tracking.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="207" width="236" x="786" y="37"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <association id="11">    
-    <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="12" name="logHandler">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="13" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
+  <class id="9" language="java" name="LiveMicroscopy.CAMConnection.SenderThread" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="99" width="105" x="432" y="1410"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="10" language="java" name="LiveMicroscopy.CAMControlWindow" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/CAMControlWindow.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="243" width="194" x="786" y="284"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="11" language="java" name="LiveMicroscopy.CellTracking" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/CellTracking.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="99" width="129" x="41" y="37"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="12" language="java" name="LiveMicroscopy.CAMConnection" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/CAMConnection.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="603" width="246" x="490" y="757"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="13" language="java" name="LiveMicroscopy.JImageWindow" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/JImageWindow.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="81" width="175" x="571" y="37"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="14" language="java" name="LiveMicroscopy.PluginWindow.ImageLoaderThread" project="leicaCamTracking" 
+    file="/leicaCamTracking/src/LiveMicroscopy/PluginWindow.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="99" width="139" x="56" y="757"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <association id="15">    
+    <end type="SOURCE" refId="8" navigable="false">      
+      <attribute id="16" name="guiPluginWindow"/>      
+      <multiplicity id="17" minimum="0" maximum="1"/>    
     </end>    
-    <end type="TARGET" refId="9" navigable="true"/>    
+    <end type="TARGET" refId="3" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <nesting id="14">    
-    <end type="SOURCE" refId="4"/>    
-    <end type="TARGET" refId="2"/>  
+  <nesting id="18">    
+    <end type="SOURCE" refId="12"/>    
+    <end type="TARGET" refId="9"/>  
   </nesting>  
-  <nesting id="15">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="10"/>  
+  <nesting id="19">    
+    <end type="SOURCE" refId="12"/>    
+    <end type="TARGET" refId="5"/>  
   </nesting>  
-  <nesting id="16">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="6"/>  
-  </nesting>  
-  <association id="17">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="18" name="guiPluginWindow">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="19" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="5" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
   <association id="20">    
-    <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="21" name="camConnection">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="22" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="23">    
-    <end type="SOURCE" refId="9" navigable="false">      
-      <attribute id="24" name="logDisplayer">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="25" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
+    <end type="SOURCE" refId="8" navigable="false">      
+      <attribute id="21" name="guiCAMControl"/>      
+      <multiplicity id="22" minimum="0" maximum="1"/>    
     </end>    
     <end type="TARGET" refId="10" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <nesting id="26">    
-    <end type="SOURCE" refId="4"/>    
+  <association id="23">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="24" name="camConnection"/>      
+      <multiplicity id="25" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="12" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="26">    
+    <end type="SOURCE" refId="12" navigable="false">      
+      <attribute id="27" name="instance"/>      
+      <multiplicity id="28" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="12" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="29">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="30" name="instance"/>      
+      <multiplicity id="31" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="32">    
+    <end type="SOURCE" refId="10" navigable="false">      
+      <attribute id="33" name="camConnection"/>      
+      <multiplicity id="34" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="12" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="35">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="36" name="logHandler"/>      
+      <multiplicity id="37" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="38">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="14"/>  
+  </nesting>  
+  <association id="39">    
+    <end type="SOURCE" refId="12" navigable="false">      
+      <attribute id="40" name="messageObservers"/>      
+      <multiplicity id="41" minimum="0" maximum="2147483647"/>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="42">    
+    <end type="SOURCE" refId="10" navigable="false">      
+      <attribute id="43" name="instance"/>      
+      <multiplicity id="44" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="10" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="45">    
+    <end type="SOURCE" refId="1"/>    
     <end type="TARGET" refId="7"/>  
   </nesting>  
-  <association id="27">    
-    <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="28" name="instance">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="29" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
+  <nesting id="46">    
+    <end type="SOURCE" refId="10"/>    
+    <end type="TARGET" refId="2"/>  
+  </nesting>  
+  <association id="47">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="48" name="logDisplayer"/>      
+      <multiplicity id="49" minimum="0" maximum="1"/>    
     </end>    
-    <end type="TARGET" refId="5" navigable="true"/>    
+    <end type="TARGET" refId="7" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 

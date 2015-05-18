@@ -1,6 +1,7 @@
 package LiveMicroscopy;
 
 import ij.ImagePlus;
+import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.NewImage;
 import ij.gui.Roi;
@@ -12,6 +13,8 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.InetAddress;
@@ -69,14 +72,11 @@ public class PluginWindow extends JFrame {
 
 	private JTextField textFieldHostAddress;
 	private JTextField textFieldPort;
-
-	private JPanel panelImageView;
 	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
 
-	private CAMConnection camConnection = new CAMConnection(imageQueue);
+	private CAMConnection camConnection = new CAMConnection();
 	private Logger logger = Logger.getGlobal();
 	private LogHandler logHandler;
-	private JTextField textFieldImagePath;
 	private JTextField textFieldXPos;
 	private JTextField textFieldYPos;
 	private JTextField textFieldZPos;
@@ -133,7 +133,7 @@ public class PluginWindow extends JFrame {
 		textFieldPort.setColumns(5);
 
 		JScrollPane scrollPaneLogging = new JScrollPane();
-		scrollPaneLogging.setBounds(210, 701, 674, 199);
+		scrollPaneLogging.setBounds(10, 575, 874, 286);
 		getContentPane().add(scrollPaneLogging);
 
 		JEditorPane textAreaLogging = new JEditorPane();
@@ -154,26 +154,26 @@ public class PluginWindow extends JFrame {
 		// Button "Connect"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		JButton btnConnect = new JButton("Connect");
-		btnConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				try {
-					camConnection.connect(getHostName(), getPort());
-					if (camConnection.isConnected()) {
-						indicateEstablishedConnection(true);
-						String returnedMessage = camConnection.receiveCAMCommand();
-						createImagingThread();
-					}
-				} catch (UnknownHostException e) {
-					logger.warning("Invalid host address format: " + e.getMessage());
-				} catch (NumberFormatException e) {
-					logger.warning("Invalid port number format: " + e.getMessage());
-				}
-			}
-		});
-		btnConnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnConnect.setBounds(10, 93, 75, 29);
-		panelConnection.add(btnConnect);
+//		JButton btnConnect = new JButton("Connect");
+//		btnConnect.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent event) {
+//				try {
+//					camConnection.connect(getHostName(), getPort());
+//					if (camConnection.isConnected()) {
+//						indicateEstablishedConnection(true);
+//						String returnedMessage = camConnection.receiveCAMCommand();
+//						createImagingThread();
+//					}
+//				} catch (UnknownHostException e) {
+//					logger.warning("Invalid host address format: " + e.getMessage());
+//				} catch (NumberFormatException e) {
+//					logger.warning("Invalid port number format: " + e.getMessage());
+//				}
+//			}
+//		});
+//		btnConnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
+//		btnConnect.setBounds(10, 93, 75, 29);
+//		panelConnection.add(btnConnect);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "Disconnect"
@@ -192,71 +192,9 @@ public class PluginWindow extends JFrame {
 		panelConnection.add(btnDisconnect);
 		btnDisconnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
 
-		panelImageView = new JPanel();
-		panelImageView.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Image View",
-				TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panelImageView.setBounds(210, 11, 674, 364);
-		getContentPane().add(panelImageView);
-		panelImageView.setLayout(null);
-
-		JPanel panelPathSelection = new JPanel();
-		panelPathSelection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelPathSelection.setBounds(10, 278, 190, 97);
-		getContentPane().add(panelPathSelection);
-		panelPathSelection.setLayout(null);
-
-		textFieldImagePath = new JTextField();
-		textFieldImagePath.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		textFieldImagePath.setEditable(false);
-		textFieldImagePath.setBounds(10, 34, 170, 20);
-		panelPathSelection.add(textFieldImagePath);
-		textFieldImagePath.setColumns(10);
-
-		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		// Button "Select path"
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command
-		// übermittelt wird.
-		JButton buttonSelectPath = new JButton("Choose");
-		buttonSelectPath.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				JFileChooser chooser = new JFileChooser();
-				chooser.setDialogTitle("Choose an image...");
-				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-				int returnValue = chooser.showDialog(PluginWindow.instance, "Select");
-
-				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					File imageFile = chooser.getSelectedFile();
-					textFieldImagePath.setText(imageFile.getAbsolutePath());
-
-					if (imageQueue == null)
-						imageQueue = new LinkedBlockingQueue<File>();
-					try {
-						imageQueue.put(imageFile);
-					} catch (InterruptedException e) {
-						logger.warning(e.getMessage());
-					}
-
-					Thread imagePresenter = new Thread(new ImageLoaderThread());
-					imagePresenter.setDaemon(true);
-					imagePresenter.start();
-				}
-			}
-		});
-		buttonSelectPath.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		buttonSelectPath.setBounds(10, 65, 71, 23);
-		panelPathSelection.add(buttonSelectPath);
-
-		JLabel lblImagePath = new JLabel("Image path (maybe unnecessary)");
-		lblImagePath.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		lblImagePath.setBounds(10, 11, 170, 12);
-		panelPathSelection.add(lblImagePath);
-
 		JPanel panelCAMCommand = new JPanel();
 		panelCAMCommand.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelCAMCommand.setBounds(10, 386, 190, 514);
+		panelCAMCommand.setBounds(10, 152, 190, 378);
 		getContentPane().add(panelCAMCommand);
 		panelCAMCommand.setLayout(null);
 
@@ -275,57 +213,57 @@ public class PluginWindow extends JFrame {
 		// Button "Send CAM command"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		JButton btnSendCommand = new JButton("Send command");
-		btnSendCommand.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				if (camConnection.isConnected()) {
-					String camCommand = textAreaCamCommand.getText();
-					if (CAMCommandParser.isValidCAMCommand(camCommand)) {
-						camConnection.sendCAMCommand(camCommand);
-						String returnedMessage = camConnection.receiveCAMCommand();
-					} else {
-						logger.severe("Wrong CAM Command structure.");
-					}
-				}
-			}
-		});
-		btnSendCommand.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnSendCommand.setBounds(10, 109, 170, 23);
-		panelCAMCommand.add(btnSendCommand);
+//		JButton btnSendCommand = new JButton("Send command");
+//		btnSendCommand.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent event) {
+//				if (camConnection.isConnected()) {
+//					String camCommand = textAreaCamCommand.getText();
+//					if (CAMCommandParser.isValidCAMCommand(camCommand)) {
+//						camConnection.sendCAMCommand(camCommand);
+//						String returnedMessage = camConnection.receiveCAMCommand();
+//					} else {
+//						logger.severe("Wrong CAM Command structure.");
+//					}
+//				}
+//			}
+//		});
+//		btnSendCommand.setFont(new Font("Tahoma", Font.PLAIN, 11));
+//		btnSendCommand.setBounds(10, 109, 170, 23);
+//		panelCAMCommand.add(btnSendCommand);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "Get stage position"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		JButton btnGetStagePosition = new JButton("Get stage position");
-		btnGetStagePosition.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				if (camConnection.isConnected()) {
-					String returnedMessage = camConnection.getStageInfo();
-					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
-					setTextStagePosition(camCommand);
-				}
-			}
-		});
-		btnGetStagePosition.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnGetStagePosition.setBounds(10, 143, 170, 23);
-		panelCAMCommand.add(btnGetStagePosition);
+//		JButton btnGetStagePosition = new JButton("Get stage position");
+//		btnGetStagePosition.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent event) {
+//				if (camConnection.isConnected()) {
+//					String returnedMessage = camConnection.getStageInfo();
+//					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
+//					setTextStagePosition(camCommand);
+//				}
+//			}
+//		});
+//		btnGetStagePosition.setFont(new Font("Tahoma", Font.PLAIN, 11));
+//		btnGetStagePosition.setBounds(10, 143, 170, 23);
+//		panelCAMCommand.add(btnGetStagePosition);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "Get scan status"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		JButton btnGetScanStatus = new JButton("Get scan status");
-		btnGetScanStatus.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				if (camConnection.isConnected()) {
-					String returnedMessage = camConnection.getScanStatus();
-				}
-			}
-		});
-		btnGetScanStatus.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		btnGetScanStatus.setBounds(10, 177, 170, 23);
-		panelCAMCommand.add(btnGetScanStatus);
+//		JButton btnGetScanStatus = new JButton("Get scan status");
+//		btnGetScanStatus.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent event) {
+//				if (camConnection.isConnected()) {
+//					String returnedMessage = camConnection.getScanStatus();
+//				}
+//			}
+//		});
+//		btnGetScanStatus.setFont(new Font("Tahoma", Font.PLAIN, 11));
+//		btnGetScanStatus.setBounds(10, 177, 170, 23);
+//		panelCAMCommand.add(btnGetScanStatus);
 
 		JLabel lblStagePosition = new JLabel("Stage Position");
 		lblStagePosition.setBounds(10, 211, 68, 14);
@@ -380,27 +318,27 @@ public class PluginWindow extends JFrame {
 		// Button "Set position"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		JButton btnSetPosition = new JButton("Set position");
-		btnSetPosition.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				if (camConnection.isConnected()) {
-					try {
-						camConnection.moveStage(Double.parseDouble(textFieldXPos.getText()),
-								Double.parseDouble(textFieldYPos.getText()), CAMConnection.MOVE_ABSOLUTE,
-								CAMConnection.UNIT_METER);
-					} catch (NumberFormatException e) {
-						logger.severe(e.getMessage());
-					} catch (Exception e) {
-						logger.severe(e.getMessage());
-					}
-					String returnedMessage = camConnection.receiveCAMCommand();
-					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
-					setTextStagePosition(camCommand);
-				}
-			}
-		});
-		btnSetPosition.setBounds(10, 311, 170, 23);
-		panelCAMCommand.add(btnSetPosition);
+//		JButton btnSetPosition = new JButton("Set position");
+//		btnSetPosition.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent event) {
+//				if (camConnection.isConnected()) {
+//					try {
+//						camConnection.moveStage(Double.parseDouble(textFieldXPos.getText()),
+//								Double.parseDouble(textFieldYPos.getText()), CAMConnection.MOVE_ABSOLUTE,
+//								CAMConnection.UNIT_METER);
+//					} catch (NumberFormatException e) {
+//						logger.severe(e.getMessage());
+//					} catch (Exception e) {
+//						logger.severe(e.getMessage());
+//					}
+//					String returnedMessage = camConnection.receiveCAMCommand();
+//					Hashtable<String, String> camCommand = CAMCommandParser.parseStringToCAMCommand(returnedMessage);
+//					setTextStagePosition(camCommand);
+//				}
+//			}
+//		});
+//		btnSetPosition.setBounds(10, 311, 170, 23);
+//		panelCAMCommand.add(btnSetPosition);
 
 		JLabel lblScanStatus = new JLabel("Scan status");
 		lblScanStatus.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -430,70 +368,9 @@ public class PluginWindow extends JFrame {
 		});
 		btnExecutePipeline.setBounds(10, 345, 170, 23);
 		panelCAMCommand.add(btnExecutePipeline);
-		
-		JButton btnClearLog = new JButton("Clear Log");
-		btnClearLog.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textAreaLogging.setText("");
-			}
-		});
-		btnClearLog.setBounds(91, 480, 89, 23);
-		panelCAMCommand.add(btnClearLog);
-
-		JPanel panelScreeningSettings = new JPanel();
-		panelScreeningSettings.setBackground(new Color(255, 204, 153));
-		panelScreeningSettings.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
-				"Screening Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panelScreeningSettings.setBounds(10, 152, 190, 115);
-		getContentPane().add(panelScreeningSettings);
-		panelScreeningSettings.setLayout(null);
-
-		JLabel lblResolution = new JLabel("Resolution");
-		lblResolution.setBounds(10, 26, 50, 14);
-		panelScreeningSettings.add(lblResolution);
-
-		JComboBox<String> comboBoxResolution = new JComboBox<String>();
-		comboBoxResolution.setModel(new DefaultComboBoxModel<String>(new String[] { "not yet implemented" }));
-		comboBoxResolution.setBounds(85, 24, 95, 20);
-		panelScreeningSettings.add(comboBoxResolution);
-
-		JLabel lblImagesSec = new JLabel("Images / sec.");
-		lblImagesSec.setBounds(10, 58, 65, 14);
-		panelScreeningSettings.add(lblImagesSec);
-
-		JComboBox<String> comboBoxImagesSec = new JComboBox<String>();
-		comboBoxImagesSec.setModel(new DefaultComboBoxModel<String>(new String[] { "not yet implemented" }));
-		comboBoxImagesSec.setBounds(85, 54, 95, 20);
-		panelScreeningSettings.add(comboBoxImagesSec);
-
-		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		// Button "Start Tracking"
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-		JButton btnStartTracking = new JButton("Start Tracking");
-		btnStartTracking.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ImagePlus image = imageWindow.getImagePlus();
-				Roi roi = image.getRoi();
-
-				ImagePlus slice = NewImage.createRGBImage("Roi", (int) Math.round(roi.getFloatWidth()),
-						(int) Math.round(roi.getFloatHeight()), image.getSlice(), 0);
-
-				slice.setProcessor(new ColorProcessor(roi.getBounds().width, roi.getBounds().height));
-
-				slice.getProcessor().insert(image.getProcessor(), -roi.getBounds().x, -roi.getBounds().y);
-
-				BufferedImage bufferedImage = slice.getBufferedImage();
-
-				panelImageView.paintComponents(panelImageView.getGraphics());
-				panelImageView.getGraphics().drawImage(bufferedImage, 0, 0, null);
-			}
-		});
-		btnStartTracking.setBounds(10, 83, 170, 23);
-		panelScreeningSettings.add(btnStartTracking);
 
 		JScrollPane scrollPanePipeline = new JScrollPane();
-		scrollPanePipeline.setBounds(210, 386, 674, 304);
+		scrollPanePipeline.setBounds(210, 309, 674, 221);
 		getContentPane().add(scrollPanePipeline);
 
 		textAreaPipeline = new JTextArea();
@@ -501,6 +378,19 @@ public class PluginWindow extends JFrame {
 
 		JLabel lblCamCommandPipeline = new JLabel("CAM Command Pipeline");
 		scrollPanePipeline.setColumnHeaderView(lblCamCommandPipeline);
+		
+		JButton btnClearLog = new JButton("Clear Log");
+		btnClearLog.setBounds(10, 541, 89, 23);
+		getContentPane().add(btnClearLog);
+		
+		JPanel panel = new JPanel();
+		panel.setBounds(210, 11, 287, 287);
+		getContentPane().add(panel);
+		btnClearLog.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textAreaLogging.setText("");
+			}
+		});
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -579,24 +469,23 @@ public class PluginWindow extends JFrame {
 
 				File 		imageFile			= null;
 				ImagePlus 	imageFromMicroscope = null;
+				ImageCanvas imageCanvas			= null;
 				ImageWindow imageWindow			= null;
 				
-				boolean firstRunWindowSetup 	= true;
-								
 				while (true) {				
 					imageFile 			= imageQueue.take();					
 					imageFromMicroscope = new ImagePlus(imageFile.getAbsolutePath());
 					
-					if (firstRunWindowSetup) {
+					if (imageWindow == null || !imageWindow.isVisible()) {
 						Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 						int screenWidth = screenSize.width;
 						int screenHeight = screenSize.height;
 						
 						imageWindow = new ImageWindow(imageFromMicroscope);
-						imageWindow.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
+						imageWindow.setBounds(210, 11, 287, 287);
+						instance.getContentPane().add(new JImageWindow(imageWindow));
+						//imageWindow.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
 						imageWindow.getCanvas().fitToWindow();
-						
-						firstRunWindowSetup = false;
 					} else {
 						imageWindow.setImage(imageFromMicroscope);
 					}		
