@@ -483,7 +483,7 @@ public class PluginWindow extends JFrame {
 						
 						imageWindow = new ImageWindow(imageFromMicroscope);
 						imageWindow.setBounds(210, 11, 287, 287);
-						instance.getContentPane().add(new JImageWindow(imageWindow));
+//						instance.getContentPane().add(new JImageWindow(imageWindow));
 						//imageWindow.setBounds(screenWidth / 2 - 600, screenHeight / 2 - 400, 1200, 800);
 						imageWindow.getCanvas().fitToWindow();
 					} else {

@@ -5,6 +5,7 @@ import ij.gui.ImageWindow;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,11 +14,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -45,7 +50,11 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	private JTextField textFieldHostIp;
 	private JTextField textFieldHostPort;
+	
 	private JLabel lblConnectionstatus;
+	private JLabel lblPipelineStatus;
+	
+	private JButton btnExecutePipeline;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// CAM Connection
@@ -69,16 +78,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		System.out.println(camCommand);
 
 		if (camCommand.contains("/alternativepath:")) { // received file path
-			int idxBeginCommand = camCommand.indexOf("/alternativepath:");
-			int idxBeginPath = camCommand.indexOf(":", idxBeginCommand) + 1;
-			int idxEndPath = camCommand.indexOf("/", idxBeginPath);
-			
-			String path = camCommand.substring(idxBeginPath, idxEndPath).trim();
-			try {
-				imageQueue.put(new File(path));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			putFileIntoQueue(camCommand);
 		}
 	}
 
@@ -88,11 +88,24 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		System.out.println(logMessage);
 	}
 
+	private void putFileIntoQueue(String camCommand) {
+		int idxBeginCommand = camCommand.indexOf("/alternativepath:");
+		int idxBeginPath = camCommand.indexOf(":", idxBeginCommand) + 1;
+		int idxEndPath = camCommand.indexOf("/", idxBeginPath);
+
+		String path = camCommand.substring(idxBeginPath, idxEndPath).trim();
+		try {
+			imageQueue.put(new File(path));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Imaging
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();;
+	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
 
 	private void initImaging() {
 		Thread imageLoader = new Thread(new ImageLoaderThread());
@@ -117,11 +130,12 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 						imageWindow = new ImageWindow(imagePlus);
 					} else {
 						imageWindow.setImage(imagePlus);
-						imageWindow.validate();
+						imageWindow.repaint();
 					}
 					imageWindow.setBounds(screenSize.width / 2 - screenSize.height / 4, screenSize.height / 4,
 							screenSize.height / 2, screenSize.height / 2);
 					imageWindow.getCanvas().fitToWindow();
+					imageWindow.setVisible(true);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -130,7 +144,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// GUI construction
+	// GUI
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private CAMControlWindow() {
@@ -201,12 +215,22 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				if (camConnection.isConnected()) {
 					lblConnectionstatus.setForeground(new Color(0, 128, 0));
 					lblConnectionstatus.setText("connected \u25CF");
-
+					
 					textFieldHostIp.setEditable(false);
 					textFieldHostPort.setEditable(false);
+					
+					lblPipelineStatus.setForeground(new Color(0, 128, 0));
+					lblPipelineStatus.setText("ready \u25CF");
+					
+					btnExecutePipeline.setEnabled(true);
 				} else {
 					lblConnectionstatus.setForeground(Color.RED);
 					lblConnectionstatus.setText("not connected \u25CF");
+					
+					lblPipelineStatus.setForeground(Color.RED);
+					lblPipelineStatus.setText("not connected \u25CF");
+					
+					btnExecutePipeline.setEnabled(false);
 				}
 			}
 		});
@@ -229,16 +253,156 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				if (!camConnection.isConnected()) {
 					lblConnectionstatus.setForeground(Color.RED);
 					lblConnectionstatus.setText("disconnected \u25CF");
-
+					
 					textFieldHostIp.setEditable(true);
 					textFieldHostPort.setEditable(true);
+					
+					lblPipelineStatus.setForeground(Color.RED);
+					lblPipelineStatus.setText("disconnected \u25CF");
+					
+					btnExecutePipeline.setEnabled(false);
 				} else {
 					lblConnectionstatus.setForeground(new Color(0, 128, 0));
 					lblConnectionstatus.setText("connected \u25CF");
+					
+					lblPipelineStatus.setForeground(new Color(0, 128, 0));
+					lblPipelineStatus.setText("ready \u25CF");
+					
+					btnExecutePipeline.setEnabled(true);
 				}
 			}
 		});
 		btnDisconnect.setBounds(170, 89, 84, 23);
 		panelConnection.add(btnDisconnect);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Panel "CAM Pipeline"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JPanel panelCAMPipeline = new JPanel();
+		panelCAMPipeline.setBounds(10, 144, 264, 242);
+		getContentPane().add(panelCAMPipeline);
+		panelCAMPipeline.setLayout(null);
+
+		JLabel lblCamCommandPipeline = new JLabel("CAM Command Pipeline");
+		lblCamCommandPipeline.setBounds(10, 11, 111, 14);
+		panelCAMPipeline.add(lblCamCommandPipeline);
+
+		lblPipelineStatus = new JLabel("not connected \u25CF");
+		lblPipelineStatus.setForeground(Color.RED);
+		lblPipelineStatus.setHorizontalAlignment(SwingConstants.TRAILING);
+		lblPipelineStatus.setBounds(175, 11, 79, 14);
+		panelCAMPipeline.add(lblPipelineStatus);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// TextAreax "CAM Pipeline"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JScrollPane scrollPanePipeline = new JScrollPane();
+		scrollPanePipeline.setBounds(10, 36, 244, 128);
+		panelCAMPipeline.add(scrollPanePipeline);
+		
+		JList<String> listCAMPipeline = new JList<String>();
+		listCAMPipeline.setModel(new DefaultListModel<String>());
+		listCAMPipeline.setFont(new Font("Monospaced", Font.PLAIN, 11));
+		scrollPanePipeline.setViewportView(listCAMPipeline);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "AddLine"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton buttonAddLine = new JButton("+");
+		buttonAddLine.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				BlockingQueue<String> newLineQueue = new SynchronousQueue<String>();
+
+				AddNewLineGUI window = new AddNewLineGUI(newLineQueue);
+				window.setBounds(getX() - 450 / 2, getY() + 200, 450, 127);
+				window.setVisible(true);
+
+				// wait for ok from dialog
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							String newLine = newLineQueue.take();
+							// TODO: Validate newLine
+							if (!(newLine.isEmpty() || newLine == null)) {
+								DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+								model.addElement(newLine);
+							}
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}).start();
+			}
+		});
+		buttonAddLine.setBounds(10, 175, 42, 23);
+		panelCAMPipeline.add(buttonAddLine);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "RemoveLine"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnRemoveLine = new JButton("-");
+		btnRemoveLine.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+				
+				for (String line : listCAMPipeline.getSelectedValuesList()) {
+					model.removeElement(line);
+				}
+			}
+		});
+		btnRemoveLine.setBounds(62, 175, 42, 23);
+		panelCAMPipeline.add(btnRemoveLine);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "SavePipeline"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnSavePipeline = new JButton("Save");
+		btnSavePipeline.setEnabled(false);
+		btnSavePipeline.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		btnSavePipeline.setBounds(198, 175, 56, 23);
+		panelCAMPipeline.add(btnSavePipeline);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "LoadPipeline"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnLoadPipeline = new JButton("Load");
+		btnLoadPipeline.setEnabled(false);
+		btnLoadPipeline.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		btnLoadPipeline.setBounds(132, 175, 56, 23);
+		panelCAMPipeline.add(btnLoadPipeline);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "ExecutePipeline"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		btnExecutePipeline = new JButton("Execute");
+		btnExecutePipeline.setEnabled(false);
+		btnExecutePipeline.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+				
+				for (int i = 0; i < model.getSize(); i++) {
+					String command = model.getElementAt(i);
+					camConnection.sendCAMCommand(command);
+				}
+			}
+		});
+		btnExecutePipeline.setBounds(132, 209, 122, 23);
+		panelCAMPipeline.add(btnExecutePipeline);
 	}
 }

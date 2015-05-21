@@ -5,7 +5,7 @@
 /cli:Leica_CAM_Tracking /app:matrix /cmd:deletelist
 
 # ---- Assign position to scan
-/cli:Leica_CAM_Tracking /app:matrix /cmd:add /tar:camlist /exp:CAM_Overview_Scan /ext:none /slide:0 /wellX:0 /wellY:0 /fieldX:0 /fieldY:0 /dxpos:-178 /dypos:-242
+/cli:Leica_CAM_Tracking /app:matrix /cmd:add /tar:camlist /exp:Scan_1 /ext:none /slide:0 /wellX:0 /wellY:0 /fieldX:0 /fieldY:0 /dxpos:-178 /dypos:-242
 
 # ---- Start CAM scan procedure
 /cli:Leica_CAM_Tracking /app:matrix /cmd:startcamscan /runtime:1 /repeattime:1

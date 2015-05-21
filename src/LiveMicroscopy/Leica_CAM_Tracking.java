@@ -9,6 +9,8 @@ import java.awt.Toolkit;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import com.sun.java.swing.SwingUtilities3;
+
 /**
  * This class represents the ImageJ plugin. It sets up the GUI and shows it on
  * the screen. <br>
