@@ -9,7 +9,10 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
@@ -18,11 +21,13 @@ import java.util.concurrent.SynchronousQueue;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -50,6 +55,8 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	private JTextField textFieldHostIp;
 	private JTextField textFieldHostPort;
+	
+	private JTextArea textAreaLog;
 	
 	private JLabel lblConnectionstatus;
 	private JLabel lblPipelineStatus;
@@ -84,8 +91,10 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	@Override
 	public synchronized void receivedLogMessage(String logMessage) {
-		// TODO: log message
-		System.out.println(logMessage);
+		if (! (logMessage.isEmpty() || logMessage == null)) {
+			logMessage = logMessage.trim().replace("\n", "");
+			textAreaLog.append(logMessage + "\n");
+		}
 	}
 
 	private void putFileIntoQueue(String camCommand) {
@@ -130,6 +139,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 						imageWindow = new ImageWindow(imagePlus);
 					} else {
 						imageWindow.setImage(imagePlus);
+						imageWindow.validate();
 						imageWindow.repaint();
 					}
 					imageWindow.setBounds(screenSize.width / 2 - screenSize.height / 4, screenSize.height / 4,
@@ -201,9 +211,6 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				lblConnectionstatus.setForeground(new Color(196, 196, 0));
-				lblConnectionstatus.setText("connecting... \u25CF");
-
 				try {
 					InetAddress hostAddress = InetAddress.getByName(textFieldHostIp.getText());
 					int hostPort = Integer.valueOf(textFieldHostPort.getText());
@@ -244,9 +251,6 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		JButton btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
-				lblConnectionstatus.setForeground(new Color(196, 196, 0));
-				lblConnectionstatus.setText("disconnecting... \u25CF");
 
 				camConnection.disconnect();
 
@@ -295,7 +299,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		panelCAMPipeline.add(lblPipelineStatus);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		// TextAreax "CAM Pipeline"
+		// TextArea "CAM Pipeline"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JScrollPane scrollPanePipeline = new JScrollPane();
@@ -377,9 +381,29 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnLoadPipeline = new JButton("Load");
-		btnLoadPipeline.setEnabled(false);
 		btnLoadPipeline.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fileChooser.setDialogTitle("Select a text file with that describes your pipeline");
+				
+				int returnVal = fileChooser.showOpenDialog(null);
+				
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File pipelineFile = fileChooser.getSelectedFile();
+					// TODO: Check if text file
+					try {
+						BufferedReader fileReader = new BufferedReader(new FileReader(pipelineFile));
+						String line;
+						DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+						while ((line = fileReader.readLine()) != null) {
+							model.addElement(line);
+						}
+						fileReader.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 			}
 		});
 		btnLoadPipeline.setBounds(132, 175, 56, 23);
@@ -404,5 +428,27 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		});
 		btnExecutePipeline.setBounds(132, 209, 122, 23);
 		panelCAMPipeline.add(btnExecutePipeline);
+		
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Panel "CAM Comunication Log"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		
+		JPanel panelCAMLog = new JPanel();
+		panelCAMLog.setBounds(10, 397, 264, 154);
+		getContentPane().add(panelCAMLog);
+		panelCAMLog.setLayout(null);
+		
+		JLabel lblCamCommunicationLog = new JLabel("CAM Communication Log");
+		lblCamCommunicationLog.setBounds(10, 11, 117, 14);
+		panelCAMLog.add(lblCamCommunicationLog);
+		
+		JScrollPane scrollPaneLog = new JScrollPane();
+		scrollPaneLog.setBounds(10, 36, 244, 107);
+		panelCAMLog.add(scrollPaneLog);
+		
+		textAreaLog = new JTextArea();
+		textAreaLog.setFont(new Font("Monospaced", Font.PLAIN, 11));
+		textAreaLog.setEditable(false);
+		scrollPaneLog.setViewportView(textAreaLog);
 	}
 }

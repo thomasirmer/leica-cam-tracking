@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Logger;
 
 /**
  * This is a communication class with the CAM communication interface. It
@@ -64,12 +63,6 @@ public class CAMConnection {
 	private BlockingQueue<String> sendBuffer = null;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Local fields
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-	private static final Logger logger = Logger.getGlobal();
-
-	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Observer pattern
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -100,7 +93,7 @@ public class CAMConnection {
 	 */
 	public void connect(InetAddress host, int port) {
 		try {
-			logger.info("Connecting to " + host + " at port " + port + "...");
+			System.out.println("Connecting to " + host + " at port " + port + "...");
 
 			clientSocket = new Socket(host, port);
 			clientSocket.setSoTimeout(RECV_TIMEOUT_MS);
@@ -108,9 +101,9 @@ public class CAMConnection {
 			createStreams();
 			createSendRecvThreads();
 
-			logger.info("...done!");
+			System.out.println("...done!");
 		} catch (IOException e) {
-			logger.severe("...failed! " + e.getMessage());
+			System.out.println("...failed! " + e.getMessage());
 		}
 	}
 
@@ -152,18 +145,18 @@ public class CAMConnection {
 				stopSendRecvThreads();
 
 				// last message (manually)
-				logger.info("Sending 'ErrorCode = 10054' --> needed for Windows socket to close properly.");
+				System.out.println("Sending 'ErrorCode = 10054' --> needed for Windows socket to close properly.");
 				outToCAM.println("ErrorCode = 10054");
 				outToCAM.flush();
 
 				clientSocket.close();
 				clientSocket = null;
 
-				logger.info("Connection closed.");
+				System.out.println("Connection closed.");
 			} catch (IOException e) {
-				logger.severe("Failed to close socket: " + e.getMessage());
+				System.out.println("Failed to close socket: " + e.getMessage());
 			} catch (InterruptedException e) {
-				logger.warning("Disconnect interrupted while waiting for send-/receive threads to finish: " + e.getMessage());
+				System.out.println("Disconnect interrupted while waiting for send-/receive threads to finish: " + e.getMessage());
 			}
 		} else {
 			return;
@@ -204,9 +197,12 @@ public class CAMConnection {
 	public void sendCAMCommand(String command) {
 		try {
 			sendBuffer.put(command);
-			logger.info("Plugin >>> " + command);
+			
+			informLogObserver("Plugin >>> " + command);
+			
+			System.out.println("Plugin >>> " + command);
 		} catch (InterruptedException e) {
-			logger.warning("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
+			System.out.println("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
 		}
 	}
 
@@ -223,7 +219,7 @@ public class CAMConnection {
 		@Override
 		public void run() {
 			Thread.currentThread().setName("CAM Send Thread");
-			logger.info("Starting " + Thread.currentThread().getName() + "...");
+			System.out.println("Starting " + Thread.currentThread().getName() + "...");
 
 			while (sendRecvThreadsShouldRun) {
 				try {
@@ -238,7 +234,7 @@ public class CAMConnection {
 				} 
 			}
 
-			logger.info(Thread.currentThread().getName() + " terminated.");
+			System.out.println(Thread.currentThread().getName() + " terminated.");
 		}
 	}
 
@@ -255,7 +251,7 @@ public class CAMConnection {
 		@Override
 		public void run() {
 			Thread.currentThread().setName("CAM Receive Thread");
-			logger.info("Starting " + Thread.currentThread().getName() + "...");
+			System.out.println("Starting " + Thread.currentThread().getName() + "...");
 
 			while (sendRecvThreadsShouldRun) {
 				try {
@@ -264,15 +260,16 @@ public class CAMConnection {
 					command = inFromCAM.readLine(); 
 					
 					if (!command.isEmpty()) {
-						logger.info("LAS X >>> " + command);
+						System.out.println("LAS X >>> " + command);
 						informCAMObserver(command);
+						informLogObserver("CAM >>> " + command);
 					}
 				} catch (IOException e) {
 					// No log because IOException is just caused by readLine() timeout.
 				}
 			}
 
-			logger.info(Thread.currentThread().getName() + " terminated.");
+			System.out.println(Thread.currentThread().getName() + " terminated.");
 		}
 	}
 }
