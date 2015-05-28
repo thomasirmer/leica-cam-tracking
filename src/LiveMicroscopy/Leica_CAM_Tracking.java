@@ -38,7 +38,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	private static final int GUI_WIDTH_PLUGIN_WINDOW  = 900;
 	private static final int GUI_HEIGHT_PLUGIN_WINDOW = 900;
 	
-	private static final int GUI_WIDTH_CAM_CONTROL_WINDOW  = 300;
+	private static final int GUI_WIDTH_CAM_CONTROL_WINDOW  = 500;
 	private static final int GUI_HEIGHT_CAM_CONTROL_WINDOW = 600;
 
 	PluginWindow guiPluginWindow 	= null;
@@ -62,7 +62,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 		// Create GUI <<CAMControlWindow>> and show
 		guiCAMControl = CAMControlWindow.getInstance();
 		guiCAMControl.setSize(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW);
-		guiCAMControl.setLocation(getGuiOriginForCenter(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW));
+		guiCAMControl.setLocation(getGuiOriginWithOffset(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW, 0.325f, 0));
 		guiCAMControl.setVisible(true);
 	}
 
@@ -84,5 +84,23 @@ public class Leica_CAM_Tracking implements PlugIn {
 		int screenWidth = screenSize.width;
 		int screenHeight = screenSize.height;
 		return new Point(screenWidth / 2 - guiWidth / 2, screenHeight / 2 - guiHeigth / 2);
+	}
+	
+	/**
+	 * Gives the top left point for a GUI window of the given size based on the
+	 * screen resolution. This point can be used to place the GUI at the center of the screen with the given offsets
+	 * 
+	 * @param guiWidth
+	 * @param guiHeigth
+	 * @param xOffset returnedOrigin.x += xOffset * screenWidth
+	 * @param yOffset returnedOrigin.y += yOffset * screenWidth
+	 * @return top left corner point for GUI
+	 */
+	private Point getGuiOriginWithOffset(int guiWidth, int guiHeigth, float xOffset, float yOffset) {
+		Point origin = getGuiOriginForCenter(guiWidth, guiHeigth);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		origin.x += xOffset * screenSize.width;
+		origin.y += yOffset * screenSize.height;
+		return origin;
 	}
 }
