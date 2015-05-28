@@ -453,7 +453,7 @@ public class PluginWindow extends JFrame {
 	
 	private class ImageLoaderThread implements Runnable {
 
-		// TODO: Dieser Thread soll an einer BlockingQueue darauf warten, dass
+		// Dieser Thread soll an einer BlockingQueue darauf warten, dass
 		// neue Bilder angeboten werden.
 		// Die Bilder werden dann in eine Queue geschoben, wenn ein CAM Command
 		// empfangen wird, dass den Pfad zu diesem Bild mitliefert.
