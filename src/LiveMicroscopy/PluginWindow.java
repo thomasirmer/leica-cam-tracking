@@ -206,8 +206,8 @@ public class PluginWindow extends JFrame {
 		// Button "Select path"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		// TODO: Möglicherweise nicht notwendig, weil Pfad per CAM Command
-		// übermittelt wird.
+		// TODO: Mï¿½glicherweise nicht notwendig, weil Pfad per CAM Command
+		// ï¿½bermittelt wird.
 		JButton buttonSelectPath = new JButton("Choose");
 		buttonSelectPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
@@ -506,13 +506,16 @@ public class PluginWindow extends JFrame {
 			try {
 				CellTracking cellTracking = new CellTracking();
 
+				
+				
+				
 				while (true) {
 					File file = imageQueue.take();
 					ImagePlus image = new ImagePlus(file.getAbsolutePath());
 					BufferedImage bufferdImage = image.getBufferedImage();
 					panelImageView.paintComponents(panelImageView.getGraphics());
 					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
-
+					
 					// TODO: Cell tracking and stage movement calculation comes
 					// here!
 					cellTracking.track(image); // it's something ^^
@@ -522,7 +525,8 @@ public class PluginWindow extends JFrame {
 
 					Thread.sleep(2500); // DEBUG
 				}
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
+				System.out.println(e.toString());
 			}
 		}
 
