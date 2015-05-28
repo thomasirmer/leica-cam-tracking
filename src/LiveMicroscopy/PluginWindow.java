@@ -192,6 +192,77 @@ public class PluginWindow extends JFrame {
 		panelConnection.add(btnDisconnect);
 		btnDisconnect.setFont(new Font("Tahoma", Font.PLAIN, 11));
 
+<<<<<<< HEAD
+=======
+		panelImageView = new JPanel();
+		panelImageView.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Image View",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panelImageView.setBounds(210, 11, 1054, 679);
+		getContentPane().add(panelImageView);
+		panelImageView.setLayout(null);
+
+		JPanel panelPathSelection = new JPanel();
+		panelPathSelection.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelPathSelection.setBounds(10, 278, 190, 97);
+		getContentPane().add(panelPathSelection);
+		panelPathSelection.setLayout(null);
+
+		textFieldImagePath = new JTextField();
+		textFieldImagePath.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		textFieldImagePath.setEditable(false);
+		textFieldImagePath.setBounds(10, 34, 170, 20);
+		panelPathSelection.add(textFieldImagePath);
+		textFieldImagePath.setColumns(10);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Select path"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		// TODO: M�glicherweise nicht notwendig, weil Pfad per CAM Command
+		// �bermittelt wird.
+		JButton buttonSelectPath = new JButton("Choose");
+		buttonSelectPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setDialogTitle("Choose the path where the microscope will save its images...");
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int returnValue = chooser.showDialog(PluginWindow.instance, "Select");
+
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					File directory = chooser.getSelectedFile();
+					textFieldImagePath.setText(directory.getAbsolutePath());
+
+					// TODO: DEBUG - Just dummy images
+					imageQueue = new LinkedBlockingQueue<File>();
+					File[] files = directory.listFiles();
+					for (File file : files) {
+						try {
+							if (file.getAbsolutePath().endsWith("tif") 
+									|| file.getAbsolutePath().endsWith("png")
+									|| file.getAbsolutePath().endsWith("jpg") 
+									|| file.getAbsolutePath().endsWith("tiff"))
+								imageQueue.put(file);
+						} catch (InterruptedException e1) {
+						}
+					}
+
+					Thread imagePresenter = new Thread(new ImageLoaderThread());
+					imagePresenter.setDaemon(true);
+					imagePresenter.start();
+					// END: DEBUG
+				}
+			}
+		});
+		buttonSelectPath.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		buttonSelectPath.setBounds(10, 65, 71, 23);
+		panelPathSelection.add(buttonSelectPath);
+
+		JLabel lblImagePath = new JLabel("Image path (maybe unnecessary)");
+		lblImagePath.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		lblImagePath.setBounds(10, 11, 170, 12);
+		panelPathSelection.add(lblImagePath);
+
+>>>>>>> 0045e9b9d633fdb4a3ee182817faaa34a86198ca
 		JPanel panelCAMCommand = new JPanel();
 		panelCAMCommand.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelCAMCommand.setBounds(10, 152, 190, 378);
@@ -465,6 +536,7 @@ public class PluginWindow extends JFrame {
 			Thread.currentThread().setName("Image Loader Thread");
 
 			try {
+<<<<<<< HEAD
 				//CellTracking cellTracking = new CellTracking();
 
 				File 		imageFile			= null;
@@ -491,8 +563,31 @@ public class PluginWindow extends JFrame {
 					}		
 					
 					imageWindow.setVisible(true);
+=======
+				CellTracking cellTracking = new CellTracking();
+
+				
+				
+				
+				while (true) {
+					File file = imageQueue.take();
+					ImagePlus image = new ImagePlus(file.getAbsolutePath());
+					BufferedImage bufferdImage = image.getBufferedImage();
+					panelImageView.paintComponents(panelImageView.getGraphics());
+					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
+					
+					// TODO: Cell tracking and stage movement calculation comes
+					// here!
+					cellTracking.track(image); // it's something ^^
+					// END _TODO
+					bufferdImage = image.getBufferedImage();					
+					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
+
+					Thread.sleep(2500); // DEBUG
+>>>>>>> 0045e9b9d633fdb4a3ee182817faaa34a86198ca
 				}
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
+				System.out.println(e.toString());
 			}
 		}
 
