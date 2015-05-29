@@ -1,3 +1,4 @@
-/plugins/
-/bin/
+./plugins/
+./bin/
 
+./res/test-images/
