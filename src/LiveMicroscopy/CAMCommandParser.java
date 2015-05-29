@@ -45,6 +45,7 @@ public class CAMCommandParser {
 
 	public static boolean isValidCAMCommand(String camCommand) {
 		// split into {/command:parameter} blocks
+		camCommand = camCommand.replace("\n", " ");
 		String[] splittedCAMCommand = camCommand.split(" ");
 
 		// check for valid syntax per block

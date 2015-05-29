@@ -1,5 +1,4 @@
 package LiveMicroscopy;
-import ij.IJ;
 import ij.plugin.PlugIn;
 
 import java.awt.Dimension;
@@ -33,25 +32,35 @@ public class Leica_CAM_Tracking implements PlugIn {
 	// GUI
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static final int GUI_WIDTH = 1280;
-	private static final int GUI_HEIGHT = 960;
+	private static final int GUI_WIDTH_PLUGIN_WINDOW  = 900;
+	private static final int GUI_HEIGHT_PLUGIN_WINDOW = 900;
+	
+	private static final int GUI_WIDTH_CAM_CONTROL_WINDOW  = 500;
+	private static final int GUI_HEIGHT_CAM_CONTROL_WINDOW = 600;
 
-	PluginWindow gui = null;
+//	PluginWindow guiPluginWindow 	= null;
+	CAMControlWindow guiCAMControl 	= null;
 
 	@Override
 	public void run(String arg0) {
-		
+		//Hallo
 		try { // set look and feel to OS style
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
 			// doesn't matter if this goes wrong
 		}
 		
-		// Create GUI and show
-		gui = PluginWindow.getInstance();
-		gui.setSize(GUI_WIDTH, GUI_HEIGHT);
-		gui.setLocation(getGuiOrigin(GUI_WIDTH, GUI_HEIGHT));
-		gui.setVisible(true);
+		// Create GUI <<PluginWindow>> and show
+//		guiPluginWindow = PluginWindow.getInstance();
+//		guiPluginWindow.setSize(GUI_WIDTH_PLUGIN_WINDOW, GUI_HEIGHT_PLUGIN_WINDOW);
+//		guiPluginWindow.setLocation(getGuiOriginForCenter(GUI_WIDTH_PLUGIN_WINDOW, GUI_HEIGHT_PLUGIN_WINDOW));
+//		guiPluginWindow.setVisible(true);
+		
+		// Create GUI <<CAMControlWindow>> and show
+		guiCAMControl = CAMControlWindow.getInstance();
+		guiCAMControl.setSize(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW);
+		guiCAMControl.setLocation(getGuiOriginWithOffset(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW, 0.325f, 0));
+		guiCAMControl.setVisible(true);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -67,10 +76,28 @@ public class Leica_CAM_Tracking implements PlugIn {
 	 * @param guiHeigth
 	 * @return top left corner point for GUI
 	 */
-	private Point getGuiOrigin(int guiWidth, int guiHeigth) {
+	private Point getGuiOriginForCenter(int guiWidth, int guiHeigth) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int screenWidth = screenSize.width;
 		int screenHeight = screenSize.height;
 		return new Point(screenWidth / 2 - guiWidth / 2, screenHeight / 2 - guiHeigth / 2);
+	}
+	
+	/**
+	 * Gives the top left point for a GUI window of the given size based on the
+	 * screen resolution. This point can be used to place the GUI at the center of the screen with the given offsets
+	 * 
+	 * @param guiWidth
+	 * @param guiHeigth
+	 * @param xOffset returnedOrigin.x += xOffset * screenWidth
+	 * @param yOffset returnedOrigin.y += yOffset * screenWidth
+	 * @return top left corner point for GUI
+	 */
+	private Point getGuiOriginWithOffset(int guiWidth, int guiHeigth, float xOffset, float yOffset) {
+		Point origin = getGuiOriginForCenter(guiWidth, guiHeigth);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		origin.x += xOffset * screenSize.width;
+		origin.y += yOffset * screenSize.height;
+		return origin;
 	}
 }
