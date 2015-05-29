@@ -30,6 +30,12 @@ public class CAMConnection {
 
 	private static CAMConnection instance = null;
 
+	/**
+	 * Singleton constructor
+	 * 
+	 * @return Either the present instance of {@link CAMConnection} or a new
+	 *         one.
+	 */
 	public static synchronized CAMConnection getInstance() {
 		if (instance == null)
 			instance = new CAMConnection();
@@ -68,20 +74,36 @@ public class CAMConnection {
 
 	List<IMessageObserver> messageObservers = new ArrayList<IMessageObserver>();
 
+	/**
+	 * Adds the given {@link IMessageObserver} to the list of message observers.
+	 * @param observer A object that implements {@link IMessageObserver}.
+	 */
 	public void registerMessageObserver(IMessageObserver observer) {
 		messageObservers.add(observer);
 	}
 
+	/**
+	 * Removes the given {@link IMessageObserver} from the list of message observers.
+	 * @param observer A object that implements {@link IMessageObserver}.
+	 */
 	public void unregisterMessageObserver(IMessageObserver observer) {
 		messageObservers.remove(observer);
 	}
 
+	/**
+	 * Informs all registered observers about the given CAM message.
+	 * @param message The CAM message.
+	 */
 	private void informCAMObserver(String message) {
 		for (IMessageObserver observer : messageObservers) {
 			observer.receivedCAMCommand(message);
 		}
 	}
-	
+
+	/**
+	 * Informs all registerd observers about the given log message.
+	 * @param logMessage The log message.
+	 */
 	private void informLogObserver(String logMessage) {
 		for (IMessageObserver observer : messageObservers) {
 			observer.receivedLogMessage(logMessage);
@@ -107,6 +129,9 @@ public class CAMConnection {
 		}
 	}
 
+	/**
+	 * Create send and receive threads as demon threads and starts them.
+	 */
 	private void createSendRecvThreads() {
 		// send-/receive threads
 		sendBuffer = new LinkedBlockingQueue<String>();
@@ -123,6 +148,11 @@ public class CAMConnection {
 		receiver.start();
 	}
 
+	/**
+	 * Creates input and output streams for CAM communication.
+	 * @throws IOException
+	 * @throws SocketException
+	 */
 	private void createStreams() throws IOException, SocketException {
 		// output
 		OutputStream outputStream = clientSocket.getOutputStream();
@@ -163,6 +193,10 @@ public class CAMConnection {
 		}
 	}
 
+	/**
+	 * Tells the send and receive threads to stop and waits for them to terminate.
+	 * @throws InterruptedException
+	 */
 	private void stopSendRecvThreads() throws InterruptedException {
 		// loop condition for threads
 		sendRecvThreadsShouldRun = false;
@@ -176,6 +210,10 @@ public class CAMConnection {
 		sender.join();
 	}
 
+	/**
+	 * Tells if the CAM connection is established.
+	 * @return <code>true</code> if connection is established. <code>false</code> otherwise.
+	 */
 	public boolean isConnected() {
 		if (clientSocket != null)
 			if (clientSocket.isConnected())

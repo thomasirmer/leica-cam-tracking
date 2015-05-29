@@ -38,7 +38,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 	private static final int GUI_WIDTH_CAM_CONTROL_WINDOW  = 500;
 	private static final int GUI_HEIGHT_CAM_CONTROL_WINDOW = 600;
 
-	PluginWindow guiPluginWindow 	= null;
+//	PluginWindow guiPluginWindow 	= null;
 	CAMControlWindow guiCAMControl 	= null;
 
 	@Override

@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="lib/fiji-compat-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/fiji-lib-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/fiji-scripting-2.0.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/ij.jar"/>
+	<classpathentry kind="lib" path="lib/ij.jar" sourcepath="res/imgj-src"/>
 	<classpathentry kind="lib" path="lib/imagej-common-0.14.0.jar"/>
 	<classpathentry kind="lib" path="lib/jama-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/jcommon-1.0.23.jar"/>

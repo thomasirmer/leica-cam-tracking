@@ -2,6 +2,7 @@ package LiveMicroscopy;
 
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
+import ij.process.ImageProcessor;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,6 +10,7 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -38,7 +40,7 @@ import javax.swing.text.DefaultCaret;
 public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	private static final boolean __DEBUG_MODE__ = true;
-	
+
 	private static final long serialVersionUID = 1L;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -47,6 +49,12 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	private static CAMControlWindow instance;
 
+	/**
+	 * Singleton constructor
+	 * 
+	 * @return Either the present instance of {@link CAMControlWindow} or a new
+	 *         one.
+	 */
 	public static synchronized CAMControlWindow getInstance() {
 		if (instance == null)
 			instance = new CAMControlWindow();
@@ -59,14 +67,17 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
+	private JLabel lblConnectionstatus;
 	private JTextField textFieldHostIp;
 	private JTextField textFieldHostPort;
 
-	private JTextArea textAreaLog;
-	private JLabel lblConnectionstatus;
 	private JLabel lblPipelineStatus;
-
+	private JList<String> listCAMPipeline;
 	private JButton btnExecutePipeline;
+
+	private JTextArea textAreaLog;
+
+	private JTextField textFieldMediaPath;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// CAM Connection
@@ -78,22 +89,34 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 	// Observer pattern - IMessageObserver
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+	/**
+	 * Registers this object as observer at {@link CAMConnection}.
+	 */
 	private void registerObserver() {
 		CAMConnection.getInstance().registerMessageObserver(this);
 	}
 
-	@Override
+	/**
+	 * Will be invoked by all observed objects when a new CAM message arrives
+	 * from LAS X. This message handles the message and triggers all necessarry
+	 * steps.
+	 */
 	public synchronized void receivedCAMCommand(String camCommand) {
 		// TODO: Analyse command
 		// --> CAM message?
-		System.out.println(camCommand);
 
-		if (camCommand.contains("/alternativepath:") || camCommand.contains("/relpath:")) { // received file path
+		// received new image path
+		if (camCommand.contains("/alternativepath:") || camCommand.contains("/relpath:")) {
 			putFileIntoQueue(camCommand);
+		} else { // something different
+
 		}
 	}
 
-	@Override
+	/**
+	 * Will be invoked by all observed objects when a new log message is
+	 * available. The log message will be displayed in the log text area.
+	 */
 	public synchronized void receivedLogMessage(String logMessage) {
 		if (!(logMessage.isEmpty() || logMessage == null)) {
 			logMessage = logMessage.trim().replace("\n", "");
@@ -101,16 +124,24 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		}
 	}
 
+	/**
+	 * If CAM returned a new image path this method will extract the path from
+	 * the CAM message, create a new {@link File} and put it into the image
+	 * queue.
+	 * 
+	 * @param camCommand
+	 *            The CAM command containing the image path.
+	 */
 	private void putFileIntoQueue(String camCommand) {
-		
+
 		if (__DEBUG_MODE__) {
-			
+
 			try { // put random image from test folder into image queue
 				File folder = new File("res\\test-images");
 				ArrayList<File> images = new ArrayList<File>(Arrays.asList(folder.listFiles()));
-				
+
 				Random rand = new Random();
-				
+
 				int index = rand.nextInt(images.size());
 				File image = images.get(index);
 
@@ -118,33 +149,33 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			
+
 			return;
 		}
-		
+
 		int idxBeginCommand;
 		int idxBeginPath;
 		String path;
-		
+
 		if (camCommand.contains("/alternativepath:")) {
-			
+
 			idxBeginCommand = camCommand.indexOf("/alternativepath:");
 			idxBeginPath = camCommand.indexOf(":", idxBeginCommand) + 1;
-			
+
 			path = camCommand.substring(idxBeginPath).trim();
-			
+
 		} else { // camCommand.contains("/relpath:")
-			
+
 			idxBeginCommand = camCommand.indexOf("/relpath:");
 			idxBeginPath = camCommand.indexOf(":", idxBeginCommand) + 1;
-			
+
 			String mediaPath = textFieldMediaPath.getText();
 			if (!(mediaPath.endsWith("\\"))) {
 				mediaPath = mediaPath + "\\";
 			}
-			path =  mediaPath + camCommand.substring(idxBeginPath).trim();
+			path = mediaPath + camCommand.substring(idxBeginPath).trim();
 		}
-				
+
 		try {
 			imageQueue.put(new File(path));
 		} catch (InterruptedException e) {
@@ -157,16 +188,22 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
+	private ImageWindow imageWindow = null;
 
-	ImageWindow imageWindow = null;
-	private JTextField textFieldMediaPath;
-
+	/**
+	 * Starts the {@link ImageLoaderThread} as deamon thread.
+	 */
 	private void initImaging() {
 		Thread imageLoader = new Thread(new ImageLoaderThread());
 		imageLoader.setDaemon(true);
 		imageLoader.start();
 	}
 
+	/**
+	 * Waits at the image queue for new images. Whenever an image is available
+	 * this thread loads it into an {@link ImagePlus} and displays it. It also
+	 * triggers the {@link CellTracking} process.
+	 */
 	private class ImageLoaderThread implements Runnable {
 		@Override
 		public void run() {
@@ -174,11 +211,15 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 			File imageFile = null;
 			ImagePlus imagePlus = null;
+			CellTracking cellTracking = new CellTracking();
 
 			while (true) {
 				try {
 					imageFile = imageQueue.take();
 					imagePlus = new ImagePlus(imageFile.getAbsolutePath());
+
+					cellTracking.track(imagePlus);
+
 					if (imageWindow == null) {
 						imageWindow = new ImageWindow(imagePlus);
 					} else {
@@ -186,15 +227,16 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 						imageWindow.validate();
 						imageWindow.repaint();
 					}
-					
+
 					int xPosWindow = Math.round(screenSize.width / 16);
 					int yPosWindow = Math.round(screenSize.height / 8);
 					int widthWindow = Math.round(screenSize.width * 0.625f);
 					int heigthWindow = Math.round(screenSize.height * 0.75f);
-					
+
 					imageWindow.setBounds(xPosWindow, yPosWindow, widthWindow, heigthWindow);
 					imageWindow.getCanvas().fitToWindow();
 					imageWindow.setVisible(true);
+
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -208,10 +250,14 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 	private CAMControlWindow() {
 
+		getContentPane().setLayout(null);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Initilization
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 		registerObserver();
 		initImaging();
-
-		getContentPane().setLayout(null);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Panel "Connection"
@@ -355,7 +401,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		scrollPanePipeline.setBounds(10, 36, 444, 161);
 		panelCAMPipeline.add(scrollPanePipeline);
 
-		JList<String> listCAMPipeline = new JList<String>();
+		listCAMPipeline = new JList<String>();
 		listCAMPipeline.setModel(new DefaultListModel<String>());
 		listCAMPipeline.setFont(new Font("Monospaced", Font.PLAIN, 11));
 		scrollPanePipeline.setViewportView(listCAMPipeline);
@@ -501,7 +547,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		DefaultCaret caret = (DefaultCaret) textAreaLog.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		scrollPaneLog.setViewportView(textAreaLog);
-		
+
 		JButton btnClearLog = new JButton("Clear Log");
 		btnClearLog.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -519,30 +565,30 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		panelSettings.setBounds(212, 11, 262, 122);
 		getContentPane().add(panelSettings);
 		panelSettings.setLayout(null);
-		
+
 		JLabel lblSettings = new JLabel("Settings");
 		lblSettings.setBounds(10, 11, 46, 14);
 		panelSettings.add(lblSettings);
-		
+
 		JLabel lblMediaPath = new JLabel("Media Path");
 		lblMediaPath.setBounds(10, 36, 53, 14);
 		panelSettings.add(lblMediaPath);
-		
+
 		textFieldMediaPath = new JTextField();
 		textFieldMediaPath.setText("C:\\MatrixScreenerImages");
 		textFieldMediaPath.setBounds(73, 33, 137, 20);
 		panelSettings.add(textFieldMediaPath);
 		textFieldMediaPath.setColumns(10);
-		
+
 		JButton btnSelectMediaPath = new JButton("...");
 		btnSelectMediaPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser jfChooser = new JFileChooser();
 				jfChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				jfChooser.setDialogTitle("Select Matrix Screener Media Path...");
-				
+
 				int retValue = jfChooser.showOpenDialog(null);
-				
+
 				if (retValue == JFileChooser.APPROVE_OPTION) {
 					String mediaPath = jfChooser.getSelectedFile().getAbsolutePath();
 					textFieldMediaPath.setText(mediaPath);
@@ -551,5 +597,24 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		});
 		btnSelectMediaPath.setBounds(220, 32, 32, 22);
 		panelSettings.add(btnSelectMediaPath);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// __DEBUG_MODE__
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		if (__DEBUG_MODE__) {
+			try {
+				BufferedReader fileReader = new BufferedReader(new FileReader(
+						"C:\\Users\\thoirm\\Documents\\CAMCommandPipeline.txt"));
+				String line;
+				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+				while ((line = fileReader.readLine()) != null) {
+					model.addElement(line);
+				}
+				fileReader.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
 	}
 }

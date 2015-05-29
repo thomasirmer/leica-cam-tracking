@@ -2,10 +2,15 @@ package LiveMicroscopy;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.ImageWindow;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
+import ij.plugin.Thresholder;
 import ij.plugin.filter.ParticleAnalyzer;
+import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
+import ij.process.ImageConverter;
+import ij.process.ImageProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +23,24 @@ import java.util.List;
 public class CellTracking implements Measurements {
 
 	private static Integer counter = 0;
+	
+	private void convertToGray(ImagePlus img) {
+		ImageConverter converter = new ImageConverter(img);
+		converter.convertToGray8();
+	}
+	
+	private void threshold(ImagePlus img) {
+		ImageProcessor proc = img.getProcessor();
+		proc.setAutoThreshold(AutoThresholder.Method.MaxEntropy, true, ImageProcessor.BLACK_AND_WHITE_LUT);
+		img.setProcessor(proc);
+	}
 
 	public void track(ImagePlus imp) {
-		IJ.setThreshold(imp, 31, 255, "Black & White");
-
+//		IJ.setThreshold(imp, 31, 255, "Black & White");
+		
+		convertToGray(imp);
+		threshold(imp);
+		
 		ResultsTable rt = ResultsTable.getResultsTable();
 		if (rt == null)
 			rt = new ResultsTable();
