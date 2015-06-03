@@ -44,14 +44,17 @@ public class CellTracking implements Measurements {
 	private static Integer counter=0;
 
 	public void track(ImagePlus imp) {
+		
 		IJ.setThreshold(imp, 31, 255, "Black & White");
 
 		ResultsTable rt=ResultsTable.getResultsTable();
 		if(rt==null) 
 			rt=new ResultsTable(); 
 		rt.showRowNumbers(true);
-		ParticleAnalyzer particleAnalyzer=new ParticleAnalyzer(ParticleAnalyzer.CLEAR_WORKSHEET+ParticleAnalyzer.SHOW_OUTLINES+ParticleAnalyzer.AREA+ParticleAnalyzer.CENTROID, Measurements.AREA+Measurements.CENTROID,rt,100,10000,0,1);
+		ParticleAnalyzer particleAnalyzer=new ParticleAnalyzer(ParticleAnalyzer.AREA+ParticleAnalyzer.CENTROID+ParticleAnalyzer.SHOW_NONE, Measurements.AREA+Measurements.CENTROID,rt,100,10000,0,1);
+		particleAnalyzer.setHideOutputImage(true);
 		particleAnalyzer.analyze(imp);
+		particleAnalyzer = null;
 
 		//i=0: Area | i=6: X | i=7: Y		
 		float[] area = rt.getColumn(0);
@@ -68,13 +71,20 @@ public class CellTracking implements Measurements {
 		System.out.println("Vergleich");
 		rt.show("Results");
 		
+		int color=255;
+		double umrechnung=4.3845;
+		
+		ImagePlus duplicatedImage = imp.duplicate();
+		
 		if(counter > 0)
 		{
-			ByteProcessor bp = (ByteProcessor)imp.getProcessor();
+			ByteProcessor bp = (ByteProcessor)duplicatedImage.getProcessor();
+			
 			List<Particle> oldParticleList = ParticleContainer.getInstance().getParticles().get(counter);
 			double distance;
 			double minDistance;
 
+			bp.setColor(color);
 			for(int i=0; i < currentParticleList.size(); i++)
 			{
 				minDistance=9999;
@@ -88,13 +98,27 @@ public class CellTracking implements Measurements {
 						currentParticleList.get(i).setId(oldParticleList.get(j).getId());
 					}
 				}
+				bp.drawString(Integer.toString(currentParticleList.get(i).getId()), (int)((int)currentParticleList.get(i).getX()*umrechnung), (int)((int)currentParticleList.get(i).getY()*umrechnung));
 				System.out.println("ID: " + currentParticleList.get(i).getId() + "\tArea: " + area[i] + "\tX: " + x[i] + "\tY: " + y[i]);
-				bp.drawString(currentParticleList.get(i).getId(), currentParticleList.get(i).getX(), currentParticleList.get(i).getY());
+			
+			}
+		}
+		else
+		{
+			for(int i=0; i < currentParticleList.size(); i++)
+			{
+				ByteProcessor bp = (ByteProcessor)duplicatedImage.getProcessor();
+				bp.setColor(color);
+				bp.drawString(Integer.toString(currentParticleList.get(i).getId()), (int)((int)currentParticleList.get(i).getX()*umrechnung), (int)((int)currentParticleList.get(i).getY()*umrechnung));
 			}
 		}
 		counter++;
 		ParticleContainer.getInstance().getParticles().put(counter, currentParticleList);
-	
+		IJ.resetThreshold(imp);
+		FileSaver fs = new FileSaver(duplicatedImage);		
+		fs.saveAsPng("/bph/home/bioinf2/test/"+counter);
+		duplicatedImage.flush();
+		duplicatedImage = null;
 		
 		
 		

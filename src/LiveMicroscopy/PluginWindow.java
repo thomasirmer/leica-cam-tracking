@@ -521,8 +521,8 @@ public class PluginWindow extends JFrame {
 					cellTracking.track(image); // it's something ^^
 					// END _TODO
 					bufferdImage = image.getBufferedImage();					
-					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
-
+					//panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, null);
+					panelImageView.getGraphics().drawImage(bufferdImage, 0, 0, 1280, 960, 0, 0, 1692, 1340, null);					
 					Thread.sleep(2500); // DEBUG
 				}
 			} catch (Exception e) {
