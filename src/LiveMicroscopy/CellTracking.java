@@ -1,38 +1,20 @@
 package LiveMicroscopy;
+
 import ij.IJ;
 import ij.ImagePlus;
-import ij.Macro;
+import ij.gui.ImageWindow;
 import ij.io.FileSaver;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
-import ij.plugin.filter.Analyzer;
-import ij.plugin.filter.ParticleAnalyzer;
-import ij.process.ColorProcessor;
-import ij.process.ByteProcessor;
-import ij.process.BinaryProcessor;
-import ij.process.ShortProcessor;
-import ij.plugin.filter.EDM;
-import fiji.plugin.trackmate.*;
-import fiji.plugin.trackmate.detection.LogDetectorFactory;
-import fiji.plugin.trackmate.features.FeatureFilter;
-import fiji.plugin.trackmate.features.track.TrackDurationAnalyzer;
-import fiji.plugin.trackmate.tracking.LAPUtils;
-import fiji.plugin.trackmate.tracking.sparselap.SparseLAPTrackerFactory;
-import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.plugin.Thresholder;
-import ij.plugin.Thresholder.*;
+import ij.plugin.filter.ParticleAnalyzer;
+import ij.process.AutoThresholder;
+import ij.process.ByteProcessor;
+import ij.process.ImageConverter;
+import ij.process.ImageProcessor;
 
-import java.awt.DisplayMode;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.image.BufferedImage;
-import java.util.*;
-
-import net.imagej.*;
-
-import org.jdom2.*;
-
-import TrackTest.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class implements the cell tracking algorithms.
@@ -40,10 +22,22 @@ import TrackTest.*;
  * @author Thomas Irmer
  */
 public class CellTracking implements Measurements {
+
+	private static Integer counter = 0;
 	
-	private static Integer counter=0;
+	private void convertToGray(ImagePlus img) {
+		ImageConverter converter = new ImageConverter(img);
+		converter.convertToGray8();
+	}
+	
+	private void threshold(ImagePlus img) {
+		ImageProcessor proc = img.getProcessor();
+		proc.setAutoThreshold(AutoThresholder.Method.MaxEntropy, true, ImageProcessor.BLACK_AND_WHITE_LUT);
+		img.setProcessor(proc);
+	}
 
 	public void track(ImagePlus imp) {
+
 		
 		IJ.setThreshold(imp, 31, 255, "Black & White");
 
@@ -53,23 +47,25 @@ public class CellTracking implements Measurements {
 		rt.showRowNumbers(true);
 		ParticleAnalyzer particleAnalyzer=new ParticleAnalyzer(ParticleAnalyzer.AREA+ParticleAnalyzer.CENTROID+ParticleAnalyzer.SHOW_NONE, Measurements.AREA+Measurements.CENTROID,rt,100,10000,0,1);
 		particleAnalyzer.setHideOutputImage(true);
+
 		particleAnalyzer.analyze(imp);
 		particleAnalyzer = null;
 
-		//i=0: Area | i=6: X | i=7: Y		
+		// i=0: Area | i=6: X | i=7: Y
 		float[] area = rt.getColumn(0);
 		float[] x = rt.getColumn(6);
 		float[] y = rt.getColumn(7);
-		
+
 		List<Particle> currentParticleList = new ArrayList<Particle>();
 		for (int i = 0; i < area.length; i++) {
-			Particle currentParticle = new Particle(i,area[i],x[i],y[i]);
+			Particle currentParticle = new Particle(i, area[i], x[i], y[i]);
 			currentParticleList.add(currentParticle);
 			System.out.println("ID: " + i + "\tArea: " + area[i] + "\tX: " + x[i] + "\tY: " + y[i]);
-		}	
-		
+		}
+
 		System.out.println("Vergleich");
 		rt.show("Results");
+
 		
 		int color=255;
 		double umrechnung=4.3845;
@@ -80,6 +76,7 @@ public class CellTracking implements Measurements {
 		{
 			ByteProcessor bp = (ByteProcessor)duplicatedImage.getProcessor();
 			
+
 			List<Particle> oldParticleList = ParticleContainer.getInstance().getParticles().get(counter);
 			double distance;
 			double minDistance;
@@ -90,10 +87,10 @@ public class CellTracking implements Measurements {
 				minDistance=9999;
 				for(int j=0; j < oldParticleList.size(); j++)
 				{
+
 					distance = currentParticleList.get(i).CompareTo(oldParticleList.get(j));
-					
-					if(distance < minDistance)
-					{
+
+					if (distance < minDistance) {
 						minDistance = distance;
 						currentParticleList.get(i).setId(oldParticleList.get(j).getId());
 					}
@@ -110,6 +107,7 @@ public class CellTracking implements Measurements {
 				ByteProcessor bp = (ByteProcessor)duplicatedImage.getProcessor();
 				bp.setColor(color);
 				bp.drawString(Integer.toString(currentParticleList.get(i).getId()), (int)((int)currentParticleList.get(i).getX()*umrechnung), (int)((int)currentParticleList.get(i).getY()*umrechnung));
+
 			}
 		}
 		counter++;
@@ -210,5 +208,6 @@ public class CellTracking implements Measurements {
 		
 		//FileSaver saver = new FileSaver(new ImagePlus("Marked Cells Image", markedCellsImage));
 		//saver.saveAsJpeg("C:\\Users\\thoirm\\Desktop\\image.png");
+
 	}
 }

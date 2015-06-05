@@ -532,3 +532,5 @@ public class PluginWindow extends JFrame {
 
 	}
 }
+
+
