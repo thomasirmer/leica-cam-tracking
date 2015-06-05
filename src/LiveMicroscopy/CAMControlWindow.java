@@ -2,7 +2,6 @@ package LiveMicroscopy;
 
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
-import ij.process.ImageProcessor;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,7 +9,6 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -394,18 +392,18 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		panelCAMPipeline.add(lblPipelineStatus);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		// TextArea "CAM Pipeline"
+		// List "CAM Pipeline"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JScrollPane scrollPanePipeline = new JScrollPane();
-		scrollPanePipeline.setBounds(10, 36, 444, 161);
+		scrollPanePipeline.setBounds(10, 36, 444, 127);
 		panelCAMPipeline.add(scrollPanePipeline);
 
 		listCAMPipeline = new JList<String>();
 		listCAMPipeline.setModel(new DefaultListModel<String>());
 		listCAMPipeline.setFont(new Font("Monospaced", Font.PLAIN, 11));
 		scrollPanePipeline.setViewportView(listCAMPipeline);
-
+		
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "AddLine"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -438,7 +436,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				}).start();
 			}
 		});
-		buttonAddLine.setBounds(10, 208, 42, 23);
+		buttonAddLine.setBounds(10, 174, 42, 23);
 		panelCAMPipeline.add(buttonAddLine);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -455,8 +453,53 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				}
 			}
 		});
-		btnRemoveLine.setBounds(62, 208, 42, 23);
+		btnRemoveLine.setBounds(62, 174, 42, 23);
 		panelCAMPipeline.add(btnRemoveLine);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Line up"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnUp = new JButton("\u21e7");
+		btnUp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+
+				int nIndices = listCAMPipeline.getSelectedIndices().length;
+				int index = listCAMPipeline.getSelectedIndex();
+
+				if (nIndices == 1 && index > 0) {
+					swapListElements(listCAMPipeline, index, index - 1);
+					listCAMPipeline.setSelectedIndex(index - 1);
+				}
+			}
+		});
+		btnUp.setBounds(10, 208, 42, 23);
+		panelCAMPipeline.add(btnUp);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Line down"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+		JButton btnDown = new JButton("\u21E9");
+		btnDown.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
+
+				int nIndices = listCAMPipeline.getSelectedIndices().length;
+				int index = listCAMPipeline.getSelectedIndex();
+				int nElements = model.size();
+
+				if (nIndices == 1 && index < nElements - 1) {
+					swapListElements(listCAMPipeline, index, index + 1);
+					listCAMPipeline.setSelectedIndex(index + 1);
+				}
+			}
+		});
+		btnDown.setBounds(62, 208, 42, 23);
+		panelCAMPipeline.add(btnDown);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "SavePipeline"
@@ -468,7 +511,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		btnSavePipeline.setBounds(299, 208, 56, 23);
+		btnSavePipeline.setBounds(398, 174, 56, 23);
 		panelCAMPipeline.add(btnSavePipeline);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -501,7 +544,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				}
 			}
 		});
-		btnLoadPipeline.setBounds(233, 208, 56, 23);
+		btnLoadPipeline.setBounds(332, 174, 56, 23);
 		panelCAMPipeline.add(btnLoadPipeline);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -521,7 +564,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				}
 			}
 		});
-		btnExecutePipeline.setBounds(365, 208, 89, 23);
+		btnExecutePipeline.setBounds(332, 208, 122, 23);
 		panelCAMPipeline.add(btnExecutePipeline);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -547,6 +590,10 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		DefaultCaret caret = (DefaultCaret) textAreaLog.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		scrollPaneLog.setViewportView(textAreaLog);
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// Button "Clear Log"
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnClearLog = new JButton("Clear Log");
 		btnClearLog.addActionListener(new ActionListener() {
@@ -604,8 +651,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 		if (__DEBUG_MODE__) {
 			try {
-				BufferedReader fileReader = new BufferedReader(new FileReader(
-						"C:\\Users\\thoirm\\Documents\\CAMCommandPipeline.txt"));
+				BufferedReader fileReader = new BufferedReader(new FileReader("./res/doc/CAMCommandPipeline.txt"));
 				String line;
 				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
 				while ((line = fileReader.readLine()) != null) {
@@ -616,5 +662,19 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 				e1.printStackTrace();
 			}
 		}
+	}
+
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Helper methods
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+	private <T> void swapListElements(JList<T> list, int index1, int index2) {
+		DefaultListModel<T> model = (DefaultListModel<T>) list.getModel();
+
+		T element1 = model.get(index1);
+		T element2 = model.get(index2);
+
+		model.set(index2, element1);
+		model.set(index1, element2);
 	}
 }
