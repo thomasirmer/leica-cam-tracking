@@ -38,8 +38,10 @@ public class CellTracking implements Measurements {
 
 	public void track(ImagePlus imp) {
 
+		convertToGray(imp);
+		threshold(imp);
 		
-		IJ.setThreshold(imp, 31, 255, "Black & White");
+		//IJ.setThreshold(imp, 31, 255, "Black & White");
 
 		ResultsTable rt=ResultsTable.getResultsTable();
 		if(rt==null) 
@@ -114,7 +116,7 @@ public class CellTracking implements Measurements {
 		ParticleContainer.getInstance().getParticles().put(counter, currentParticleList);
 		IJ.resetThreshold(imp);
 		FileSaver fs = new FileSaver(duplicatedImage);		
-		fs.saveAsPng("/bph/home/bioinf2/test/"+counter);
+		fs.saveAsPng("./res/tracked-images/" + counter + ".png");
 		duplicatedImage.flush();
 		duplicatedImage = null;
 		

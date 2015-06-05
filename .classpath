@@ -4,17 +4,6 @@
 	<classpathentry kind="src" path="build-res"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/fiji-compat-2.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/fiji-lib-2.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/fiji-scripting-2.0.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/ij.jar" sourcepath="res/imgj-src"/>
-	<classpathentry kind="lib" path="lib/imagej-common-0.14.0.jar"/>
-	<classpathentry kind="lib" path="lib/jama-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/jcommon-1.0.23.jar"/>
-	<classpathentry kind="lib" path="lib/jdom-2.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/jdom2-2.0.5.jar"/>
-	<classpathentry kind="lib" path="lib/jfreechart-1.0.19.jar"/>
-	<classpathentry kind="lib" path="lib/mines-jtk-20100113.jar"/>
-	<classpathentry kind="lib" path="lib/TrackMate_-2.7.3.jar"/>
 	<classpathentry kind="output" path="plugins"/>
 </classpath>
