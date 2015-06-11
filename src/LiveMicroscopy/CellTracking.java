@@ -7,7 +7,6 @@ import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
 import ij.process.AutoThresholder;
-import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageConverter;
 import ij.process.ImageProcessor;
@@ -38,21 +37,22 @@ public class CellTracking implements Measurements {
 
 	public void track(ImagePlus imp) {
 
+		// prepare image
 		convertToGray(imp);
 		threshold(imp);
 
-		// IJ.setThreshold(imp, 31, 255, "Black & White");
-
+		// init result table
 		ResultsTable rt = ResultsTable.getResultsTable();
 		if (rt == null)
 			rt = new ResultsTable();
 		rt.showRowNumbers(true);
+		rt.reset();
+
+		// analyze image
 		ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(ParticleAnalyzer.AREA + ParticleAnalyzer.CENTROID
 				+ ParticleAnalyzer.SHOW_NONE, Measurements.AREA + Measurements.CENTROID, rt, 100, 10000, 0, 1);
 		particleAnalyzer.setHideOutputImage(true);
-
 		particleAnalyzer.analyze(imp);
-		particleAnalyzer = null;
 
 		// i=0: Area | i=6: X | i=7: Y
 		float[] area = rt.getColumn(0);
@@ -70,19 +70,29 @@ public class CellTracking implements Measurements {
 		rt.show("Results");
 
 		Color textColor = Color.RED;
-		double umrechnung = 1.0; //4.3845;
+		double umrechnung = 1.0; // 4.3845;
 
 		ImagePlus duplicatedImage = imp.duplicate();
 
-		if (counter > 0) {
+		if (counter <= 0) { // first image --> draw cell ids
+			for (int i = 0; i < currentParticleList.size(); i++) {
+				ColorProcessor proc = duplicatedImage.getProcessor().convertToColorProcessor();
+				duplicatedImage.setProcessor(proc);
+				proc.setColor(textColor);
+				proc.drawString(Integer.toString(currentParticleList.get(i).getId()), (int) ((int) currentParticleList.get(i)
+						.getX() * umrechnung), (int) ((int) currentParticleList.get(i).getY() * umrechnung));
+
+			}
+		} else { // following images --> match cell ids and draw cell ids
 			ColorProcessor proc = duplicatedImage.getProcessor().convertToColorProcessor();
+			duplicatedImage.setProcessor(proc);
 
 			List<Particle> oldParticleList = ParticleContainer.getInstance().getParticles().get(counter);
 			double distance;
 			double minDistance;
 
 			proc.setColor(textColor);
-			
+
 			for (int i = 0; i < currentParticleList.size(); i++) {
 				minDistance = 9999;
 				for (int j = 0; j < oldParticleList.size(); j++) {
@@ -98,23 +108,16 @@ public class CellTracking implements Measurements {
 						.getX() * umrechnung), (int) ((int) currentParticleList.get(i).getY() * umrechnung));
 				System.out.println("ID: " + currentParticleList.get(i).getId() + "\tArea: " + area[i] + "\tX: " + x[i]
 						+ "\tY: " + y[i]);
-
-			}
-		} else {
-			for (int i = 0; i < currentParticleList.size(); i++) {
-				ColorProcessor proc = duplicatedImage.getProcessor().convertToColorProcessor();
-				duplicatedImage.setProcessor(proc);
-				proc.setColor(textColor);
-				proc.drawString(Integer.toString(currentParticleList.get(i).getId()), (int) ((int) currentParticleList.get(i)
-						.getX() * umrechnung), (int) ((int) currentParticleList.get(i).getY() * umrechnung));
-
 			}
 		}
+
 		counter++;
+
+		// save as file
 		ParticleContainer.getInstance().getParticles().put(counter, currentParticleList);
 		IJ.resetThreshold(imp);
 		FileSaver fs = new FileSaver(duplicatedImage);
-		fs.saveAsPng("./res/tracked-images/" + counter + ".png");
+		fs.saveAsPng("./res/tracked-images/" + String.format("%03d", counter) + ".png");
 		duplicatedImage.flush();
 		duplicatedImage = null;
 
@@ -148,7 +151,8 @@ public class CellTracking implements Measurements {
 		// settings.addTrackAnalyzer(analyzer);
 		//
 		//
-		// FeatureFilter filter2=new FeatureFilter("Track_Displacement", 10d,
+		// FeatureFilter filter2=new FeatureFilter("Track_Displacement",
+		// 10d,
 		// true);
 		// settings.addTrackFilter(filter2);
 		//
@@ -179,14 +183,16 @@ public class CellTracking implements Measurements {
 
 		// ResultsTable rt = new ResultsTable();
 		// rt.reset();
-		// //ParticleAnalyzer pa = new ParticleAnalyzer(0, CENTROID, rt, 500,
+		// //ParticleAnalyzer pa = new ParticleAnalyzer(0, CENTROID, rt,
+		// 500,
 		// 10000);
 		// //pa.analyze(image);
 		//
 		// float[] xRes = rt.getColumn(ResultsTable.X_CENTROID);
 		// float[] yRes = rt.getColumn(ResultsTable.Y_CENTROID);
 		//
-		// BufferedImage markedCellsImage = new BufferedImage(image.getWidth(),
+		// BufferedImage markedCellsImage = new
+		// BufferedImage(image.getWidth(),
 		// image.getHeight(), BufferedImage.TYPE_INT_RGB);
 		// Graphics markedCellsGraphics = markedCellsImage.getGraphics();
 		// ShortProcessor sp = (ShortProcessor)image.getProcessor();
@@ -202,11 +208,13 @@ public class CellTracking implements Measurements {
 
 		// for (int i = 0; i < xRes.length; i++) {
 		// Point particle = new Point((int) xRes[i], (int) yRes[i]);
-		// markedCellsGraphics.fillRect(particle.x - 10, particle.y - 10, 20,
+		// markedCellsGraphics.fillRect(particle.x - 10, particle.y - 10,
+		// 20,
 		// 20);
 		// }
 
-		// FileSaver saver = new FileSaver(new ImagePlus("Marked Cells Image",
+		// FileSaver saver = new FileSaver(new
+		// ImagePlus("Marked Cells Image",
 		// markedCellsImage));
 		// saver.saveAsJpeg("C:\\Users\\thoirm\\Desktop\\image.png");
 

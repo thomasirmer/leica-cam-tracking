@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -141,6 +140,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 		imageLoader.start();
 	}
 
+	static int idx = 0;
 	/**
 	 * If CAM returned a new image path this method will extract the path from
 	 * the CAM message, create a new {@link File} and put it into the image
@@ -152,15 +152,16 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 	private void putFileIntoQueue(String camCommand) {
 
 		if (__DEBUG_MODE__) {
-
+			
 			try { // put random image from test folder into image queue
 				File folder = new File("res\\test-images");
 				ArrayList<File> images = new ArrayList<File>(Arrays.asList(folder.listFiles()));
 
-				Random rand = new Random();
-
-				int index = rand.nextInt(images.size());
-				File image = images.get(index);
+				//Random rand = new Random();
+				//int index = rand.nextInt(images.size());
+				
+				File image = images.get(idx);
+				idx++;
 
 				imageQueue.put(image);
 			} catch (InterruptedException e) {

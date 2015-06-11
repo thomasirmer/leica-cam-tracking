@@ -235,8 +235,6 @@ public class CAMConnection {
 	public void sendCAMCommand(String command) {
 		try {
 			sendBuffer.put(command);
-			
-			informLogObserver("Plugin >>> " + command);
 		} catch (InterruptedException e) {
 			System.out.println("Interrupted while sending command: " + command + "\n> Error: " + e.getMessage() + " <");
 		}
@@ -261,8 +259,11 @@ public class CAMConnection {
 					String command = sendBuffer.take();
 					outToCAM.println(command);
 					outToCAM.flush();
+					
+					informLogObserver("Plugin >>> " + command);
+					
 					// delay for CAM Commands --> necessary for multiple CAM Commands (due to CAM documentation)
-					int delayTime = 50; 
+					int delayTime = 100; 
 					Thread.sleep(delayTime);
 				} catch (InterruptedException e) {
 					// No need to handle this
