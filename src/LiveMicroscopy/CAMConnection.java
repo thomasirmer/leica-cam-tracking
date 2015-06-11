@@ -287,6 +287,11 @@ public class CAMConnection {
 
 			while (sendRecvThreadsShouldRun) {
 				try {
+					if (outToCAM.checkError()) { // connection lost
+						disconnect();
+						break;
+					}
+					
 					// realized with timeout at construction of inputStream
 					String command = "";
 					command = inFromCAM.readLine(); 

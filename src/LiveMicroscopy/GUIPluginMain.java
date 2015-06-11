@@ -2,6 +2,7 @@ package LiveMicroscopy;
 
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
+import ij.measure.Calibration;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,6 +18,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -35,7 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultCaret;
 
-public class CAMControlWindow extends JFrame implements IMessageObserver {
+public class GUIPluginMain extends JFrame implements IMessageObserver {
 
 	private static final boolean __DEBUG_MODE__ = true;
 
@@ -45,17 +47,17 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 	// Singleton construction
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static CAMControlWindow instance;
+	private static GUIPluginMain instance;
 
 	/**
 	 * Singleton constructor
 	 * 
-	 * @return Either the present instance of {@link CAMControlWindow} or a new
+	 * @return Either the present instance of {@link GUIPluginMain} or a new
 	 *         one.
 	 */
-	public static synchronized CAMControlWindow getInstance() {
+	public static synchronized GUIPluginMain getInstance() {
 		if (instance == null)
-			instance = new CAMControlWindow();
+			instance = new GUIPluginMain();
 		return instance;
 	}
 
@@ -122,6 +124,23 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		}
 	}
 
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	// Imaging
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
+	private ImageWindow imageWindow = null;
+	private JTextField textFieldClientName;
+
+	/**
+	 * Starts the {@link ImageLoaderThread} as deamon thread.
+	 */
+	private void initImaging() {
+		Thread imageLoader = new Thread(new ImageLoaderThread());
+		imageLoader.setDaemon(true);
+		imageLoader.start();
+	}
+
 	/**
 	 * If CAM returned a new image path this method will extract the path from
 	 * the CAM message, create a new {@link File} and put it into the image
@@ -181,22 +200,6 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		}
 	}
 
-	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// Imaging
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
-	private ImageWindow imageWindow = null;
-
-	/**
-	 * Starts the {@link ImageLoaderThread} as deamon thread.
-	 */
-	private void initImaging() {
-		Thread imageLoader = new Thread(new ImageLoaderThread());
-		imageLoader.setDaemon(true);
-		imageLoader.start();
-	}
-
 	/**
 	 * Waits at the image queue for new images. Whenever an image is available
 	 * this thread loads it into an {@link ImagePlus} and displays it. It also
@@ -216,6 +219,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 					imageFile = imageQueue.take();
 					imagePlus = new ImagePlus(imageFile.getAbsolutePath());
 
+					normalizeImageProperties(imagePlus);
 					cellTracking.track(imagePlus);
 
 					if (imageWindow == null) {
@@ -241,12 +245,19 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 			}
 		}
 	}
+	
+	private void normalizeImageProperties(ImagePlus img) {
+		Calibration imgCalibration = img.getCalibration();
+		imgCalibration.pixelHeight = 1.0;
+		imgCalibration.pixelWidth = 1.0;
+		imgCalibration.setUnit("pixel");
+	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// GUI
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private CAMControlWindow() {
+	private GUIPluginMain() {
 
 		getContentPane().setLayout(null);
 
@@ -403,7 +414,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		listCAMPipeline.setModel(new DefaultListModel<String>());
 		listCAMPipeline.setFont(new Font("Monospaced", Font.PLAIN, 11));
 		scrollPanePipeline.setViewportView(listCAMPipeline);
-		
+
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// Button "AddLine"
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -414,8 +425,8 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 
 				BlockingQueue<String> newLineQueue = new SynchronousQueue<String>();
 
-				AddNewLineGUI window = new AddNewLineGUI(newLineQueue);
-				window.setBounds(getX() - 450 / 2, getY() + 200, 450, 127);
+				GUIAddCAMCommand window = new GUIAddCAMCommand(newLineQueue, textFieldClientName.getText());
+				window.setBounds(getX() - 450 / 2, getY() + 200, 450, 430);
 				window.setVisible(true);
 
 				// wait for ok from dialog
@@ -463,8 +474,6 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		JButton btnUp = new JButton("\u21e7");
 		btnUp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
-				DefaultListModel<String> model = (DefaultListModel<String>) listCAMPipeline.getModel();
 
 				int nIndices = listCAMPipeline.getSelectedIndices().length;
 				int index = listCAMPipeline.getSelectedIndex();
@@ -618,7 +627,7 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		panelSettings.add(lblSettings);
 
 		JLabel lblMediaPath = new JLabel("Media Path");
-		lblMediaPath.setBounds(10, 36, 53, 14);
+		lblMediaPath.setBounds(10, 36, 56, 14);
 		panelSettings.add(lblMediaPath);
 
 		textFieldMediaPath = new JTextField();
@@ -644,6 +653,16 @@ public class CAMControlWindow extends JFrame implements IMessageObserver {
 		});
 		btnSelectMediaPath.setBounds(220, 32, 32, 22);
 		panelSettings.add(btnSelectMediaPath);
+
+		JLabel lblClientName = new JLabel("Client name");
+		lblClientName.setBounds(10, 61, 56, 14);
+		panelSettings.add(lblClientName);
+
+		textFieldClientName = new JTextField();
+		textFieldClientName.setBounds(73, 58, 179, 20);
+		textFieldClientName.setText(Leica_CAM_Tracking.PLUGIN_NAME);
+		panelSettings.add(textFieldClientName);
+		textFieldClientName.setColumns(10);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		// __DEBUG_MODE__

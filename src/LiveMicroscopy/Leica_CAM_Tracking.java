@@ -32,14 +32,14 @@ public class Leica_CAM_Tracking implements PlugIn {
 	// GUI
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-	private static final int GUI_WIDTH_PLUGIN_WINDOW  = 900;
-	private static final int GUI_HEIGHT_PLUGIN_WINDOW = 900;
+//	private static final int GUI_WIDTH_PLUGIN_WINDOW  = 900;
+//	private static final int GUI_HEIGHT_PLUGIN_WINDOW = 900;
 	
 	private static final int GUI_WIDTH_CAM_CONTROL_WINDOW  = 500;
 	private static final int GUI_HEIGHT_CAM_CONTROL_WINDOW = 600;
 
-//	PluginWindow guiPluginWindow 	= null;
-	CAMControlWindow guiCAMControl 	= null;
+//	PluginWindow guiPluginWindow = null;
+	GUIPluginMain guiPluginMain = null;
 
 	@Override
 	public void run(String arg0) {
@@ -56,11 +56,11 @@ public class Leica_CAM_Tracking implements PlugIn {
 //		guiPluginWindow.setLocation(getGuiOriginForCenter(GUI_WIDTH_PLUGIN_WINDOW, GUI_HEIGHT_PLUGIN_WINDOW));
 //		guiPluginWindow.setVisible(true);
 		
-		// Create GUI <<CAMControlWindow>> and show
-		guiCAMControl = CAMControlWindow.getInstance();
-		guiCAMControl.setSize(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW);
-		guiCAMControl.setLocation(getGuiOriginWithOffset(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW, 0.325f, 0));
-		guiCAMControl.setVisible(true);
+		// Create GUI GUIPluginMain and show
+		guiPluginMain = GUIPluginMain.getInstance();
+		guiPluginMain.setSize(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW);
+		guiPluginMain.setLocation(getGuiOriginWithOffset(GUI_WIDTH_CAM_CONTROL_WINDOW, GUI_HEIGHT_CAM_CONTROL_WINDOW, 0.325f, 0));
+		guiPluginMain.setVisible(true);
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

@@ -8,9 +8,11 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
 import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageConverter;
 import ij.process.ImageProcessor;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,19 +69,20 @@ public class CellTracking implements Measurements {
 		System.out.println("Vergleich");
 		rt.show("Results");
 
-		int color = 255;
-		double umrechnung = 4.3845;
+		Color textColor = Color.RED;
+		double umrechnung = 1.0; //4.3845;
 
 		ImagePlus duplicatedImage = imp.duplicate();
 
 		if (counter > 0) {
-			ByteProcessor bp = (ByteProcessor) duplicatedImage.getProcessor();
+			ColorProcessor proc = duplicatedImage.getProcessor().convertToColorProcessor();
 
 			List<Particle> oldParticleList = ParticleContainer.getInstance().getParticles().get(counter);
 			double distance;
 			double minDistance;
 
-			bp.setColor(color);
+			proc.setColor(textColor);
+			
 			for (int i = 0; i < currentParticleList.size(); i++) {
 				minDistance = 9999;
 				for (int j = 0; j < oldParticleList.size(); j++) {
@@ -91,7 +94,7 @@ public class CellTracking implements Measurements {
 						currentParticleList.get(i).setId(oldParticleList.get(j).getId());
 					}
 				}
-				bp.drawString(Integer.toString(currentParticleList.get(i).getId()), (int) ((int) currentParticleList.get(i)
+				proc.drawString(Integer.toString(currentParticleList.get(i).getId()), (int) ((int) currentParticleList.get(i)
 						.getX() * umrechnung), (int) ((int) currentParticleList.get(i).getY() * umrechnung));
 				System.out.println("ID: " + currentParticleList.get(i).getId() + "\tArea: " + area[i] + "\tX: " + x[i]
 						+ "\tY: " + y[i]);
@@ -99,9 +102,10 @@ public class CellTracking implements Measurements {
 			}
 		} else {
 			for (int i = 0; i < currentParticleList.size(); i++) {
-				ByteProcessor bp = (ByteProcessor) duplicatedImage.getProcessor();
-				bp.setColor(color);
-				bp.drawString(Integer.toString(currentParticleList.get(i).getId()), (int) ((int) currentParticleList.get(i)
+				ColorProcessor proc = duplicatedImage.getProcessor().convertToColorProcessor();
+				duplicatedImage.setProcessor(proc);
+				proc.setColor(textColor);
+				proc.drawString(Integer.toString(currentParticleList.get(i).getId()), (int) ((int) currentParticleList.get(i)
 						.getX() * umrechnung), (int) ((int) currentParticleList.get(i).getY() * umrechnung));
 
 			}

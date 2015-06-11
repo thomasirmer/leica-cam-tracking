@@ -1,7 +1,5 @@
-/cli:Leica_CAM_Tracking /app:matrix /cmd:deletelist
-/cli:Leica_CAM_Tracking /app:matrix /cmd:add /tar:camlist /exp:CAM_Scan /ext:none /slide:0 /wellX:0 /wellY:0 /fieldX:0 /fieldY:0 /dxpos:-178 /dypos:-242
-/cli:Leica_CAM_Tracking /app:matrix /cmd:add /tar:camlist /exp:CAM_Scan /ext:none /slide:0 /wellX:0 /wellY:0 /fieldX:0 /fieldY:0 /dxpos:178 /dypos:242
-/cli:Leica_CAM_Tracking /app:matrix /cmd:add /tar:camlist /exp:CAM_Scan /ext:none /slide:0 /wellX:0 /wellY:0 /fieldX:0 /fieldY:0 /dxpos:0 /dypos:0
-/cli:Leica_CAM_Tracking /app:matrix /cmd:startcamscan /runtime:1 /repeattime:1
 /cli:Leica_CAM_Tracking /app:matrix /cmd:startscan
+/cli:Leica_CAM_Tracking /app:matrix /cmd:deletelist
+/cli:Leica_CAM_Tracking /app:matrix /cmd:add /tar:camlist /exp:CAM_Scan_HighRes /ext:none /slide:0 /wellX:0 /wellY:0 /fieldX:0 /fieldY:0 /dxpos:100 /dypos:200
+/cli:Leica_CAM_Tracking /app:matrix /cmd:startcamscan /runtime:1 /repeattime:1
 /cli:Leica_CAM_Tracking /app:matrix /sys:1 /cmd:stopwaitingforcam
