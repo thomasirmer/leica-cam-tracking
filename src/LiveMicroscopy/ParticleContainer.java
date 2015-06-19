@@ -16,8 +16,7 @@ public class ParticleContainer {
 
 	private ParticleContainer() {		
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public static ParticleContainer getInstance () {
 	    if (instance == null) {
 	    	instance = new ParticleContainer();
