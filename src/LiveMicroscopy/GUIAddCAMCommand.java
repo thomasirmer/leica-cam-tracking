@@ -4,13 +4,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class GUIAddCAMCommand extends JFrame {
 
@@ -19,6 +20,7 @@ public class GUIAddCAMCommand extends JFrame {
 	private JTextField textFieldAddNewLine;
 
 	private BlockingQueue<String> commandQueue;
+	private JTextField textFieldCellID;
 
 	public GUIAddCAMCommand(BlockingQueue<String> commandQueue, String clientName) {
 		setTitle("Add CAM Command");
@@ -162,13 +164,25 @@ public class GUIAddCAMCommand extends JFrame {
 		JButton btnAddPosition = new JButton("Add Position");
 		btnAddPosition.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				int cellID = Integer.parseInt(textFieldCellID.getText());
+				List<Particle> particleList = GUIPluginMain.getParticleList();
+				
+				int xCoord = 0;
+				int yCoord = 0;
+				
+				if (particleList != null) {
+					xCoord = (int) Math.round(particleList.get(cellID - 1).getX());
+					yCoord = (int) Math.round(particleList.get(cellID - 1).getY());
+				}
+				
 				textFieldAddNewLine
 						.setText("/cli:"
 								+ clientName
-								+ " /app:matrix /cmd:add /tar:camlist /exp:JOBNAME /ext:none /slide:0 /wellx:0 /welly:0 /fieldx:0 /fieldy:0 /dxpos:0 /dypos:0");
+								+ " /app:matrix /cmd:add /tar:camlist /exp:JOBNAME /ext:none /slide:0 /wellx:0 /welly:0 /fieldx:0 /fieldy:0 /dxpos:" + xCoord + "/dypos:" + yCoord);
 			}
 		});
-		btnAddPosition.setBounds(10, 206, 107, 23);
+		btnAddPosition.setBounds(244, 70, 107, 23);
 		panelPredefinedCommands.add(btnAddPosition);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -194,7 +208,7 @@ public class GUIAddCAMCommand extends JFrame {
 				textFieldAddNewLine.setText("/cli:" + clientName + " /app:matrix /sys:1 /cmd:stopwaitingforcam");
 			}
 		});
-		btnSkipWaiting.setBounds(10, 240, 107, 23);
+		btnSkipWaiting.setBounds(10, 206, 107, 23);
 		panelPredefinedCommands.add(btnSkipWaiting);
 
 		// ---- GET INFORMATION COMMANDS
@@ -255,6 +269,19 @@ public class GUIAddCAMCommand extends JFrame {
 		});
 		btnExperiment.setBounds(127, 138, 107, 23);
 		panelPredefinedCommands.add(btnExperiment);
+		
+		JLabel lblCamPositions = new JLabel("CAM Positions");
+		lblCamPositions.setBounds(244, 11, 67, 14);
+		panelPredefinedCommands.add(lblCamPositions);
+		
+		JLabel lblCellId = new JLabel("Cell ID");
+		lblCellId.setBounds(244, 40, 31, 14);
+		panelPredefinedCommands.add(lblCellId);
+		
+		textFieldCellID = new JTextField();
+		textFieldCellID.setBounds(285, 37, 66, 20);
+		panelPredefinedCommands.add(textFieldCellID);
+		textFieldCellID.setColumns(10);
 	}
 
 	private void actionOk(String command) {

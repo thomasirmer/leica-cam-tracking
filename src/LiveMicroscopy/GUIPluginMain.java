@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -126,6 +127,12 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 	// Imaging
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+	private static List<Particle> particleList = null;
+	
+	public static List<Particle> getParticleList() {
+		return GUIPluginMain.particleList;
+	}
+	
 	private BlockingQueue<File> imageQueue = new LinkedBlockingQueue<File>();
 	private ImageWindow imageWindow = null;
 	private JTextField textFieldClientName;
@@ -220,7 +227,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 					imagePlus = new ImagePlus(imageFile.getAbsolutePath());
 
 					normalizeImageProperties(imagePlus);
-					cellTracking.track(imagePlus);
+					GUIPluginMain.particleList = cellTracking.track(imagePlus);
 
 					if (imageWindow == null) {
 						imageWindow = new ImageWindow(imagePlus);

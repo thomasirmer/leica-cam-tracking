@@ -35,7 +35,7 @@ public class CellTracking implements Measurements {
 		img.setProcessor(proc);
 	}
 
-	public void track(ImagePlus imp) {
+	public List<Particle> track(ImagePlus imp) {
 		
 		// prepare image
 		convertToGray(imp);
@@ -120,6 +120,8 @@ public class CellTracking implements Measurements {
 		fs.saveAsPng("./res/tracked-images/" + String.format("%03d", counter) + ".png");
 		duplicatedImage.flush();
 		duplicatedImage = null;
+		
+		return currentParticleList;
 
 		// imp.show();
 		// Model model=new Model();
