@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -217,7 +216,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 
 			while (true) {
 				try {
-					imageFile = imageQueue.take();
+					imageFile = imageQueue.take(); 
 					imagePlus = new ImagePlus(imageFile.getAbsolutePath());
 
 					normalizeImageProperties(imagePlus);
@@ -230,12 +229,12 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 						imageWindow.validate();
 						imageWindow.repaint();
 					}
-
+					
 					int xPosWindow = Math.round(screenSize.width / 16);
 					int yPosWindow = Math.round(screenSize.height / 8);
 					int widthWindow = Math.round(screenSize.width * 0.625f);
 					int heigthWindow = Math.round(screenSize.height * 0.75f);
-
+					
 					imageWindow.setBounds(xPosWindow, yPosWindow, widthWindow, heigthWindow);
 					imageWindow.getCanvas().fitToWindow();
 					imageWindow.setVisible(true);
@@ -247,6 +246,10 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 		}
 	}
 	
+	/**
+	 * Sets all image properties to pixel values instead of physical units.
+	 * @param img image to normalize
+	 */
 	private void normalizeImageProperties(ImagePlus img) {
 		Calibration imgCalibration = img.getCalibration();
 		imgCalibration.pixelHeight = 1.0;

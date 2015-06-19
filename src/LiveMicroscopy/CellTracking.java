@@ -36,7 +36,7 @@ public class CellTracking implements Measurements {
 	}
 
 	public void track(ImagePlus imp) {
-
+		
 		// prepare image
 		convertToGray(imp);
 		threshold(imp);
@@ -49,8 +49,8 @@ public class CellTracking implements Measurements {
 		rt.reset();
 
 		// analyze image
-		ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(ParticleAnalyzer.AREA + ParticleAnalyzer.CENTROID
-				+ ParticleAnalyzer.SHOW_NONE, Measurements.AREA + Measurements.CENTROID, rt, 100, 10000, 0, 1);
+		ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(ParticleAnalyzer.AREA | ParticleAnalyzer.CENTROID
+				| ParticleAnalyzer.SHOW_NONE, Measurements.AREA | Measurements.CENTROID, rt, 100, 10000, 0, 1);
 		particleAnalyzer.setHideOutputImage(true);
 		particleAnalyzer.analyze(imp);
 
@@ -67,7 +67,7 @@ public class CellTracking implements Measurements {
 		}
 
 		System.out.println("Vergleich");
-		rt.show("Results");
+		//rt.show("Results");
 
 		Color textColor = Color.RED;
 		double umrechnung = 1.0; // 4.3845;
