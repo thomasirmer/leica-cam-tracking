@@ -1,6 +1,8 @@
 package LiveMicroscopy;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * The CAMCommandParser is able to validate a given CAM command and parsing a
@@ -14,6 +16,27 @@ public class CAMCommandParser {
 	private CAMCommandParser() {
 	}
 
+	public static List<CAMJob> getJobs(String camCommand) {
+			
+		Hashtable<String, String> parsedCommand = parseStringToCAMCommand(camCommand);
+		
+		int jobCount = Integer.parseInt(parsedCommand.get("count"));
+		
+		List<CAMJob> jobs = new ArrayList<CAMJob>(jobCount);
+		
+		for (int i = 1; i <= jobCount; i++) {
+			String nameIdentifier = "jobname" + i;
+			String idIdentifier = "jobid" + i;
+			
+			String jobname = parsedCommand.get(nameIdentifier);
+			int jobid = Integer.parseInt(parsedCommand.get(idIdentifier));
+			
+			jobs.add(new CAMJob(jobname, jobid));
+		}
+		
+		return jobs;
+	}
+	
 	/**
 	 * Parses a given CAM command and puts all commands and their parameters
 	 * into a hashmap.
@@ -43,6 +66,11 @@ public class CAMCommandParser {
 		return parsedCommand;
 	}
 
+	/**
+	 * Checks if the CAM syntax for the given command is correct.
+	 * @param camCommand The CAM command as string
+	 * @return true if syntax is correct - false if not
+	 */
 	public static boolean isValidCAMCommand(String camCommand) {
 		// split into {/command:parameter} blocks
 		camCommand = camCommand.replace("\n", " ");
@@ -60,5 +88,5 @@ public class CAMCommandParser {
 		}
 
 		return true;
-	}
+	}	
 }

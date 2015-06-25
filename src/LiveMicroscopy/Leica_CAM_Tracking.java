@@ -36,7 +36,7 @@ public class Leica_CAM_Tracking implements PlugIn {
 //	private static final int GUI_HEIGHT_PLUGIN_WINDOW = 900;
 	
 	private static final int GUI_WIDTH_CAM_CONTROL_WINDOW  = 500;
-	private static final int GUI_HEIGHT_CAM_CONTROL_WINDOW = 600;
+	private static final int GUI_HEIGHT_CAM_CONTROL_WINDOW = 800;
 
 //	PluginWindow guiPluginWindow = null;
 	GUIPluginMain guiPluginMain = null;

@@ -1,5 +1,6 @@
 package LiveMicroscopy;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
 import ij.measure.Calibration;
@@ -83,6 +84,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private CAMConnection camConnection = CAMConnection.getInstance();
+	public static List<CAMJob> jobList;
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// Observer pattern - IMessageObserver
@@ -101,14 +103,18 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 	 * steps.
 	 */
 	public synchronized void receivedCAMCommand(String camCommand) {
-		// TODO: Analyse command
-		// --> CAM message?
 
-		// received new image path
-		if (camCommand.contains("/alternativepath:") || camCommand.contains("/relpath:")) {
+		if (camCommand.contains("/alternativepath:") || camCommand.contains("/relpath:")) { // received new image path
 			putFileIntoQueue(camCommand);
-		} else { // something different
-
+		} else if (camCommand.contains("/dev:joblist")) { // received joblist
+			GUIPluginMain.jobList = CAMCommandParser.getJobs(camCommand);
+			
+			String joblist = "";
+			for (int i = 0; i < jobList.size(); i++) {
+				joblist += jobList.get(i).getJobname() + " (id: " + jobList.get(i).getJobID() + ")\n"; 
+			}
+			
+			textAreaLog.append(joblist);
 		}
 	}
 
@@ -592,7 +598,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JPanel panelCAMLog = new JPanel();
-		panelCAMLog.setBounds(10, 397, 464, 154);
+		panelCAMLog.setBounds(10, 397, 464, 354);
 		getContentPane().add(panelCAMLog);
 		panelCAMLog.setLayout(null);
 
@@ -601,7 +607,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 		panelCAMLog.add(lblCamCommunicationLog);
 
 		JScrollPane scrollPaneLog = new JScrollPane();
-		scrollPaneLog.setBounds(10, 36, 444, 107);
+		scrollPaneLog.setBounds(10, 36, 444, 307);
 		panelCAMLog.add(scrollPaneLog);
 
 		textAreaLog = new JTextArea();
