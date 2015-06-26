@@ -1,7 +1,5 @@
 package LiveMicroscopy;
 
-import ij.gui.GUI;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -10,16 +8,13 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
-
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.JComboBox;
+import javax.swing.SpinnerNumberModel;
 
 public class GUIAddCAMCommand extends JFrame {
 
@@ -30,6 +25,10 @@ public class GUIAddCAMCommand extends JFrame {
 	private BlockingQueue<String> commandQueue;
 	private JTextField textFieldCellID;
 	private JComboBox<CAMJob> comboBoxCAMjobs;
+
+	private JSpinner spinnerImageDimY;
+
+	private JSpinner spinnerImageDimX;
 
 	public GUIAddCAMCommand(BlockingQueue<String> commandQueue, String clientName) {
 		
@@ -183,8 +182,11 @@ public class GUIAddCAMCommand extends JFrame {
 					List<Particle> particleList = GUIPluginMain.getParticleList();
 					
 					if (particleList != null) {
-						xCoord = (int) Math.round(particleList.get(cellID - 1).getX());
-						yCoord = (int) Math.round(particleList.get(cellID - 1).getY());
+						int xOffset = (int) spinnerImageDimX.getValue() / 2;
+						int yOffset = (int) spinnerImageDimY.getValue() / 2;
+						
+						xCoord = (int) Math.round(particleList.get(cellID - 1).getX()) - xOffset;
+						yCoord = (int) Math.round(particleList.get(cellID - 1).getY()) - yOffset;
 					}
 				}
 				
@@ -205,7 +207,7 @@ public class GUIAddCAMCommand extends JFrame {
 								+ " /dypos:" + yCoord);
 			}
 		});
-		btnAddPosition.setBounds(285, 104, 129, 23);
+		btnAddPosition.setBounds(285, 172, 129, 23);
 		panelPredefinedCommands.add(btnAddPosition);
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -298,21 +300,38 @@ public class GUIAddCAMCommand extends JFrame {
 		panelPredefinedCommands.add(lblCamPositions);
 		
 		JLabel lblCellId = new JLabel("Cell ID");
-		lblCellId.setBounds(244, 40, 31, 14);
+		lblCellId.setBounds(244, 108, 31, 14);
 		panelPredefinedCommands.add(lblCellId);
 		
 		textFieldCellID = new JTextField();
-		textFieldCellID.setBounds(285, 37, 129, 20);
+		textFieldCellID.setBounds(285, 105, 129, 20);
 		panelPredefinedCommands.add(textFieldCellID);
 		textFieldCellID.setColumns(10);
 		
 		JLabel lblJob = new JLabel("Job");
-		lblJob.setBounds(244, 74, 31, 14);
+		lblJob.setBounds(244, 142, 31, 14);
 		panelPredefinedCommands.add(lblJob);
 		
 		comboBoxCAMjobs = new JComboBox<CAMJob>();
-		comboBoxCAMjobs.setBounds(285, 71, 129, 20);
+		comboBoxCAMjobs.setBounds(285, 141, 129, 20);
 		panelPredefinedCommands.add(comboBoxCAMjobs);
+		
+		JLabel lblImageDimensions = new JLabel("Image dimensions (x, y)");
+		lblImageDimensions.setBounds(244, 40, 115, 14);
+		panelPredefinedCommands.add(lblImageDimensions);
+		
+		JLabel lblX = new JLabel("x");
+		lblX.setBounds(326, 74, 6, 14);
+		panelPredefinedCommands.add(lblX);
+		
+		spinnerImageDimX = new JSpinner();
+		spinnerImageDimX.setModel(new SpinnerNumberModel(new Integer(0), null, null, new Integer(1)));
+		spinnerImageDimX.setBounds(244, 71, 72, 20);
+		panelPredefinedCommands.add(spinnerImageDimX);
+		
+		spinnerImageDimY = new JSpinner();
+		spinnerImageDimY.setBounds(342, 71, 72, 20);
+		panelPredefinedCommands.add(spinnerImageDimY);
 		
 		// add CAM job items to combo box
 		List<CAMJob> jobList = GUIPluginMain.jobList;

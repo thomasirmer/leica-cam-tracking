@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -34,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultCaret;
 
@@ -101,6 +103,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 	 * Will be invoked by all observed objects when a new CAM message arrives
 	 * from LAS X. This message handles the message and triggers all necessarry
 	 * steps.
+	 * @param camCommand The CAM command as string
 	 */
 	public synchronized void receivedCAMCommand(String camCommand) {
 
@@ -108,13 +111,6 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 			putFileIntoQueue(camCommand);
 		} else if (camCommand.contains("/dev:joblist")) { // received joblist
 			GUIPluginMain.jobList = CAMCommandParser.getJobs(camCommand);
-			
-			String joblist = "";
-			for (int i = 0; i < jobList.size(); i++) {
-				joblist += jobList.get(i).getJobname() + " (id: " + jobList.get(i).getJobID() + ")\n"; 
-			}
-			
-			textAreaLog.append(joblist);
 		}
 	}
 
@@ -165,7 +161,7 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 
 		if (__DEBUG_MODE__) {
 			
-			try { // put random image from test folder into image queue
+			try { // put some image from test folder into image queue
 				File folder = new File("res\\test-images");
 				ArrayList<File> images = new ArrayList<File>(Arrays.asList(folder.listFiles()));
 
@@ -532,9 +528,26 @@ public class GUIPluginMain extends JFrame implements IMessageObserver {
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 		JButton btnSavePipeline = new JButton("Save");
-		btnSavePipeline.setEnabled(false);
 		btnSavePipeline.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setDialogTitle("Save your pipeline to a textfile");
+				
+				int returnVal = fileChooser.showSaveDialog(null);
+				
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						FileWriter fw = new FileWriter(fileChooser.getSelectedFile());
+						
+						ListModel<String> model = listCAMPipeline.getModel();
+						for (int i = 0; i < model.getSize(); i++) {
+							fw.write(model.getElementAt(i) + "\n");
+						}
+						fw.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 			}
 		});
 		btnSavePipeline.setBounds(398, 174, 56, 23);
