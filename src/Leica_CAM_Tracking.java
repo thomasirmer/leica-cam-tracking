@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 import ij.plugin.PlugIn;
 
 import java.awt.Dimension;

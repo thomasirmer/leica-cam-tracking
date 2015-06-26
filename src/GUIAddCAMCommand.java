@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

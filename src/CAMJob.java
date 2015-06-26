@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 
 public class CAMJob {
 	private String jobname;

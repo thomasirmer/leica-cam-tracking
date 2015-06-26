@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 
 public class Particle {
 	private int id;

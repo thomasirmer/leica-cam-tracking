@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 
 public interface IMessageObserver {
 	public void receivedCAMCommand(String camCommand);

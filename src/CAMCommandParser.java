@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 
 import java.util.ArrayList;
 import java.util.Hashtable;

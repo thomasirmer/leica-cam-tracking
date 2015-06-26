@@ -1,6 +1,5 @@
-package LiveMicroscopy;
 
-import ij.IJ;
+
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
 import ij.measure.Calibration;
@@ -41,7 +40,7 @@ import javax.swing.text.DefaultCaret;
 
 public class GUIPluginMain extends JFrame implements IMessageObserver {
 
-	private static final boolean __DEBUG_MODE__ = true;
+	private static final boolean __DEBUG_MODE__ = false;
 
 	private static final long serialVersionUID = 1L;
 

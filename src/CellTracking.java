@@ -1,4 +1,4 @@
-package LiveMicroscopy;
+
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -116,9 +116,9 @@ public class CellTracking implements Measurements {
 		// save as file
 		ParticleContainer.getInstance().getParticles().put(counter, currentParticleList);
 		IJ.resetThreshold(imp);
-		FileSaver fs = new FileSaver(duplicatedImage);
-		fs.saveAsPng("./res/tracked-images/" + String.format("%03d", counter) + ".png");
-		duplicatedImage.flush();
+//		FileSaver fs = new FileSaver(duplicatedImage);
+//		fs.saveAsPng("./res/tracked-images/" + String.format("%03d", counter) + ".png");
+//		duplicatedImage.flush();
 		duplicatedImage = null;
 		
 		return currentParticleList;
